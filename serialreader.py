@@ -1,52 +1,113 @@
-from serial import Serial
-from tkinter import Tk, Text, Scrollbar, RIGHT, Y
+import tkinter as tk
+from tkinter import ttk
+import serial
+import threading
+import subprocess
 
-# Serial port configuration
-serialPort = "/dev/ttyUSB0"  # Change this to your port
-baudRate = 9600
-ser = Serial(serialPort, baudRate, timeout=0)
+count=0
+# Function to read serial data
+def read_serial():
+	global count
+	try:
+		while True:
+			if ser.in_waiting > 0:  # Check if there is data in the serial buffer
+				line = ser.readline().decode('utf-8').strip()  # Read, decode, and strip the newline
+				count+=1
+				if count==1:
+					update_textbox(line)  # Update the textbox with the received data
+				if count > 2:
+					count=0
+				# update_textbox(str(count) + " > "+line)  # Update the textbox with the received data
+	except Exception as e:
+		update_textbox(f"Error: {e}")
 
-# Create a Tkinter window
-root = Tk()
-root.wm_title("Reading Serial")
+# Function to update the tkinter Text widget
+def update_textbox(line):
+	text_box2.delete("1.0", "end")
+	text_box2.insert(tk.END, line)
+	filtr = text_filter.get(1.0, "end-1c")
+	if filtr != "":
+		if filtr in line:
+			print("contain FF")
+			dfn= text_difiner.get(1.0, "end-1c")
+			if dfn!= "":
+				line= dfn+ " "+ line
+			text_box.insert(tk.END, f"{line}\n")
+			text_box.see(tk.END)  # Scroll to the end
 
-# Create a scrollbar
-scrollbar = Scrollbar(root)
-scrollbar.pack(side=RIGHT, fill=Y)
+# Start the serial reading in a separate thread
+def start_reading():
+	thread = threading.Thread(target=read_serial, daemon=True)
+	thread.start()
 
-# Create a text box to display the serial output
-log = Text(root, width=50, height=20)
-log.pack()
+# Main Tkinter window
+root = tk.Tk()
+root.title("Serial Reader")
 
-# Attach the text box to the scrollbar
-log.config(yscrollcommand=scrollbar.set)
-scrollbar.config(command=log.yview)
+# Text box to display data
+text_box = tk.Text(root, height=20, width=50)
+text_box.pack(padx=10, pady=10)
 
+# Text box to display data
+text_box2 = tk.Text(root, height=1, width=50)
+text_box2.pack(padx=10, pady=10)
 
-result=""
+topBottomFrame = tk.Frame(root, padx=20, bg="#ffff44")
+topBottomFrame.pack(side="top", fill="x")
 
-# Function to read from serial and update the text field
-def readSerial():
-	global result
+flbel=tk.Label(topBottomFrame,text="result filter")
+flbel.pack()
 
-	while True:
-		c = ser.read()  # Attempt to read a character from Serial
-		if len(c) == 0:
-			break  # Exit if no data is read
-		result = c.decode('utf-8')
-		# result.partition('\n')[0]
-		# print(result)
-		# log.delete	('1.0', 'end')
-		# log.set=""
-		log.insert('end', result)
-		# Insert the read character into the text box
-		# log.insert('end', c.decode('utf-8'))  # Decode bytes to string
-	if len(result) > 10:
-		print(result)
-	root.after(100, readSerial)  # Schedule the next read
+# Text box to display data
+text_filter = tk.Text(topBottomFrame, height=1, width=30 )
+text_filter.pack(padx=0, pady=10)
+text_filter.insert(tk.END,"FF")
 
-# Start reading from serial after a short delay
-root.after(100, readSerial)
+fldfn=tk.Label(topBottomFrame,text="variable to store")
+fldfn.pack()
 
-# Start the Tkinter main loop
+# Text box to display data
+text_difiner = tk.Text(topBottomFrame, height=1, width=20)
+text_difiner.pack(padx=0, pady=10, side="left")
+text_difiner.insert(tk.END,"KEY_")
+# Text box to display data
+text_difiner = tk.Text(topBottomFrame, height=1, width=20)
+text_difiner.pack(side="right", padx=0, pady=10)
+text_difiner.insert(tk.END,"KEY_")
+
+# Button to start reading
+start_button = ttk.Button(root, text="Start Reading", command=start_reading)
+start_button.pack(pady=10)
+
+# sport=''
+# def cekport():
+#     global sport
+#     output = result= subprocess.check_output("dmesg | grep tty", shell=True)
+#     tty =  output.decode("utf-8")
+#     if "ttyUSB" in tty:
+#        itty=tty.index("ttyUSB")
+#        sport = '/dev/'+tty[itty:(itty+7)]
+#        # sport = '/dev/ttyUSB0'
+#     else:
+#        sport = '/dev/ttyS1'
+#
+# root.title("Serial Reader on " + sport)
+# cekport()
+# con = serial.Serial(
+#     port=sport,
+#     baudrate=9600,
+#     parity=serial.PARITY_NONE,
+#     stopbits=serial.STOPBITS_ONE,
+#     bytesize=serial.EIGHTBITS,
+# )
+for i in range(9):
+	# Configure the serial port
+	try:
+		ser = serial.Serial('/dev/ttyUSB'+str(i), baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+		root.title("Serial Reader on " + 'ttyUSB'+str(i))
+		break
+	except Exception as e:
+		text_box.insert(tk.END, f"Error: {e}\n")
+
+# Start the Tkinter event loop
 root.mainloop()
