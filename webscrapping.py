@@ -1,9 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 from tkinter import Tk, Label, Button, Entry, Text, Scrollbar, END, RIGHT, Y
-
+bg="#ffffff"
 def scrape():
 	url = url_entry.get()
+	classname= url_entry1.get()
 	try:
 		# Fetch the content from the URL
 		response = requests.get(url)
@@ -22,24 +23,30 @@ def scrape():
 		# 	text_area.insert(END, title.get_text() + '\n')
 
 
-		scores= soup.find_all('span')
-		for score in scores:
-			# scr=score.select_one("div.detailScore__wrapper detailScore__live span")
-			# scr=score.select_one("div.match-data_match-data__HGwNh span")
-			scr=score.select_one("scores")
-
-			# text_area.delete(1.0, END)
-			text_area.insert(END,str(scr)+'\n')
-
-
-		# scores= soup.find_all('section')
+		# scores= soup.find_all('span')
 		# for score in scores:
 		# 	# scr=score.select_one("div.detailScore__wrapper detailScore__live span")
 		# 	# scr=score.select_one("div.match-data_match-data__HGwNh span")
-		# 	scr=score.select_one("span.match-data_score__xQ29z")
-  #
+		# 	scr=score.select_one("scores")
+
 		# 	# text_area.delete(1.0, END)
 		# 	text_area.insert(END,str(scr)+'\n')
+
+		for dom in soup.select("span.match-data_score__xQ29z"):
+			print(dom.string)
+		# rslt=soup.select(".detailScore__live.detailScore__wrapper")
+		# print(rslt.get_text())
+		# text_area.insert(END,str(rslt)+'\n')
+		scores= soup.find_all('span',classname)
+		for score in scores:
+			# scr=score.select_one("div.detailScore__wrapper detailScore__live span")
+			# scr=score.select_one("div.match-data_match-data__HGwNh span")
+			print(score)
+			scr=score.select_one("."+classname)
+  #
+		# 	# text_area.delete(1.0, END)
+			# text_area.insert(END,str(scr)+'\n')
+			text_area.insert(END,score.get_text()+'\n')
 		# You can add more data extraction logic here
 		# For example, to extract all paragraphs:
 		# paragraphs = soup.find_all('p')
@@ -60,7 +67,15 @@ url_label.pack()
 
 url_entry = Entry(root, width=50)
 url_entry.pack()
-url_entry.insert(END, "https://www.goal.com/en/match/persis-solo-vs-barito-putera/BVyTg6WsRIJTipedxMoGF")
+url_entry.insert(END, "https://www.goal.com/en/match/cska-sofia-vs-spartak-varna/cLSNig4OSCyf2IEIDrahC")
+
+# Create a label and entry for the URL
+url_label1 = Label(root, text="Enter class name:")
+url_label1.pack()
+
+url_entry1 = Entry(root, width=50)
+url_entry1.pack()
+url_entry1.insert(END, "match-data_score__xQ29z")
 
 # Create a button to trigger scraping
 scrape_button = Button(root, text="Scrape", command=scrape)
