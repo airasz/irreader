@@ -53,6 +53,10 @@ async def fetch_and_scrape(url):
         html = response.body.decode('utf-8')  # Decode the HTML content
         soup = BeautifulSoup(html, 'html.parser')
         title = soup.title.string if soup.title else 'No title found'
+        minutes= soup.find_all('span', "match-period_period___hImu")
+        for minute in minutes:
+            print(minute)
+            mnt=minute.select_one("."+"match-period_period___hImu")
         scores= soup.find_all('span',classname)
         for score in scores:
             print(score)
