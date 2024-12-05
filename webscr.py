@@ -37,6 +37,7 @@ class Scraper:
         http_client = tornado.httpclient.AsyncHTTPClient()
         global count
         global urll
+        lscore=""
         count+=1
         if count>25:
             count =0
@@ -65,15 +66,18 @@ class Scraper:
                     tm+=team.get_text()
                     # tm=team.select_one("."+"team_team-name__0U_gn")
                 minutes= soup.find_all('span', "match-period_period___hImu")
-                for minute in minutes:
+                mm=""
+                for minut in minutes:
                     # print(mincute)
-                    mnt=minute.select_one("."+"match-period_period___hImu")
+                    # mnt=minute.select_one("."+"match-period_period___hImu")
+                    mm=minut.get_text()
                 scores= soup.find_all('span',classname)
                 for score in scores:
                     # print(score)
                     scr=score.select_one("."+classname)
                 # serialdisplay(score.get_text())
-                print(r)
+                lscore=tm+ ""+ mm +" > "+ score.get_text()
+                print(lscore)
             except Exception as e:
                 print(f"Error during scraping: {e}")
     

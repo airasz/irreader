@@ -1,90 +1,49 @@
 import tornado.ioloop
 import tornado.web
-import tornado.httpclient
 from bs4 import BeautifulSoup
+import requests
 import asyncio
-import subprocess
 
-import threading
+urll="https://www.goal.com/en/match/al-quwa-al-jawiya-vs-al-taawoun/VCix2AtlnY15A7y1Ix_OW"
+count=0
+
 
 import serial
 from time import sleep
-import json
-urll="https://www.goal.com/en/match/cska-sofia-vs-spartak-varna/cLSNig4OSCyf2IEIDrahC"
-count=0
-classname="match-data_score__xQ29z"
 
-
-
-sport=''
-def cekport():
-    global sport
-    output = result= subprocess.check_output("dmesg | grep tty", shell=True)
-    tty =  output.decode("utf-8")
-    if "ttyUSB" in tty:
-       itty=tty.index("ttyUSB")
-       sport = '/dev/'+tty[itty:(itty+7)]
-       # sport = '/dev/ttyUSB0'
-    else:
-       sport = '/dev/ttyS1'
+sport='/dev/ttyUSB0'
+# def cekport():
+#     global sport
+#     output = result= subprocess.check_output("dmesg | grep tty", shell=True)
+#     tty =  output.decode("utf-8")
+#     if "ttyUSB" in tty:
+#        itty=tty.index("ttyUSB")
+#        sport = '/dev/'+tty[itty:(itty+7)]
+#        # sport = '/dev/ttyUSB0'
+#     else:
+#        sport = '/dev/ttyS1'
 
 # cekport()
-# con = serial.Serial(
-#     port=sport,
-#     baudrate=9600,
-#     parity=serial.PARITY_NONE,
-#     stopbits=serial.STOPBITS_ONE,
-#     bytesize=serial.EIGHTBITS,
-# )
+con = serial.Serial(
+    port=sport,
+    baudrate=115200,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    bytesize=serial.EIGHTBITS,
+)
 
 def serialdisplay(msg):
     data= str.encode(msg)
-    # con.write(data)
+    con.write(data)
 
 
 
 
-# Asynchronous function to fetch and scrape a web page
-async def fetch_and_scrape(url):
-    http_client = tornado.httpclient.AsyncHTTPClient()
-    global classname
-    try:
-        response = await http_client.fetch(url)
-        html = response.body.decode('utf-8')  # Decode the HTML content
-        soup = BeautifulSoup(html, 'html.parser')
-        title = soup.title.string if soup.title else 'No title found'
-        minutes= soup.find_all('span', "match-period_period___hImu")
-        for minute in minutes:
-            print(minute)
-            mnt=minute.select_one("."+"match-period_period___hImu")
-        scores= soup.find_all('span',classname)
-        for score in scores:
-            print(score)
-            scr=score.select_one("."+classname)
-        return {"title": title, "url": url, "result": score.get_text()}
-    except Exception as e:
-        return {"error": str(e), "url": url}
 
-# Asynchronous function to fetch and scrape a web page
-async def fetch_n_scrape(url):
-    print("scrapping web")
-    http_client = tornado.httpclient.AsyncHTTPClient()
-    global classname
-    try:
-        response = await http_client.fetch(url)
-        html = response.body.decode('utf-8')  # Decode the HTML content
-        soup = BeautifulSoup(html, 'html.parser')
-        title = soup.title.string if soup.title else 'No title found'
-        scores= soup.find_all('span',classname)
-        for score in scores:
-            print(score)
-            scr=score.select_one("."+classname)
-        # serialdisplay(score.get_text())
-        print(score.get_text())
-        # return {"title": title, "url": url, "result": score.get_text()}
-    except Exception as e:
-        pass
-        # serialdisplay ("error"+ str(e))
+classname="match-data_score__xQ29z"
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Web Scraper Running! Check the terminal for scraping logs.")
 
 # Tornado request handler
 class ScrapeHandler(tornado.web.RequestHandler):
@@ -97,57 +56,114 @@ class ScrapeHandler(tornado.web.RequestHandler):
             return
         urll=url
         count=24
-        result = await fetch_and_scrape(url)
-        self.write(result)
+        # result = await fetch_and_scrape(url)
+        scraper = Scraper(url)
+        self.write("url saved")
 
-# Tornado application setup
-def make_app():
-    return tornado.web.Application([
-        (r"/scrape", ScrapeHandler),
-    ])
 
-# def loopy():
-#     global count
-#     global urll
-#     count+=1
-#     if count> 25:
-#         count=0
-#         if urll!="":
-#              fetch_n_scrape(urll)
-#     threading.Timer(1, loopy).start()
+class Scraper:
+    def __init__(self, url):
+        self.url = url
 
-# loopy()
-async def periodic_task():
-    while True:
+    async def scrape(self):
+
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        global count
+        global urll
+        lscore=""
+        count+=1
+        if count>25:
+            count =0
+            try:
+                # Send HTTP GET request
+                # response = requests.get(self.url)
+                # response.raise_for_status()  # Raise an error for bad HTTP responses
+                response = await http_client.fetch(urll)
+                html = response.body.decode('utf-8')  # Decode the HTML content
+                # Parse HTML content
+                soup = BeautifulSoup(html, 'html.parser')
+                title = soup.title.string if soup.title else 'No title found'
+
+                # articles = soup.find_all("span")
+                # for item in articles:
+                #     print(item)
+                #     category = item.select_one(".team_team-name__0U_gn span")  # <-- use item.select
+                #     print(category)
+                teams= soup.find_all('span', "heading_teams__ljLuQ")
+                # teams=soup.select('span[data-testid="team-name"]')
+                tm=""
+                for team in teams:
+                    # print(team['data-testid'])
+                    # print("teamname"+team)
+                    tmm=team.select_one("."+"heading_teams__ljLuQ")
+                    tm+=team.get_text()
+                    # tm=team.select_one("."+"team_team-name__0U_gn")
+                minutes= soup.find_all('span', "match-period_period___hImu")
+                mm=""
+                for minut in minutes:
+                    # print(mincute)
+                    # mnt=minute.select_one("."+"match-period_period___hImu")
+                    mm=minut.get_text()
+                scores= soup.find_all('span',classname)
+                for score in scores:
+                    # print(score)
+                    scr=score.select_one("."+classname)
+                # serialdisplay(score.get_text())
+                lscore=tm+ " "+ mm +" > "+ score.get_text()
+                print(lscore)
+                serialdisplay(lscore)
+            except Exception as e:
+                print(f"Error during scraping: {e}")
+
+    async def scraping(self):
 
         global count
         global urll
+        global classname
         count+=1
-        if count> 25:
+        if count>10:
             count=0
-            if urll!="":
-                await fetch_n_scrape(urll)
-        print("Task executed")
-        await asyncio.sleep(1)  # Wait for 1 second before the next iteration
+            try:
+                # Send HTTP GET request
+                response = requests.get(self.url)
+                response.raise_for_status()  # Raise an error for bad HTTP responses
 
-async def main():
-    task = asyncio.create_task(periodic_task())  # Create the periodic task
+                # Parse HTML content
+                soup = BeautifulSoup(html, 'html.parser')
+                title = soup.title.string if soup.title else 'No title found'
+                scores= soup.find_all('span',classname)
+                for score in scores:
+                    # print(score)
+                    scr=score.select_one("."+classname)
+                # serialdisplay(score.get_text())
+                result = score.get_text()
+                print("result = "+result)
+            except Exception as e:
+                print(f"Error during scraping: {e}")
 
-    # threading.Timer(1, loopy).start()
-    # Run for 10 seconds
-    await asyncio.sleep(10)
 
-    # task.cancel()  # Cancel the periodic task
-    try:
+async def periodic_scraping(scraper):
+    while True:
+        await scraper.scrape()
+        await asyncio.sleep(1)  # Wait for 1 second before the next scrape
 
-        await task  # Await the cancellation
-    except asyncio.CancelledError:
-        print("Periodic task cancelled.")
+
+def make_app():
+    return tornado.web.Application([
+        (r"/", MainHandler),(r"/scrape", ScrapeHandler),
+    ])
+
 
 if __name__ == "__main__":
+    # global urll
+    url_to_scrape = urll  # Replace with the target website
+    scraper = Scraper(url_to_scrape)
+
     app = make_app()
     app.listen(8888)
-    print("Server started at http://localhost:8888")
-    asyncio.run(main())
+
+    # Start periodic scraping task
+    tornado.ioloop.IOLoop.current().spawn_callback(periodic_scraping, scraper)
+
+    print("Starting Tornado server on http://localhost:8888")
     tornado.ioloop.IOLoop.current().start()
-    print("starting app")
