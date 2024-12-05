@@ -11,7 +11,7 @@ count=0
 import serial
 from time import sleep
 
-sport='/dev/ttyUSB0'
+sport='COM6'
 # def cekport():
 #     global sport
 #     output = result= subprocess.check_output("dmesg | grep tty", shell=True)
