@@ -9,8 +9,8 @@ import serial.tools.list_ports
 
 BACKGROUND = "#d9d9d9"
 FOREGROUND = "black"
-BUTTON_BACKGROUND = "#ffb253"
-BUTTON_ACTIVE_BACKGROUND = "#ffbf71"
+BUTTON_BACKGROUND = "#08b19a"
+BUTTON_ACTIVE_BACKGROUND = "#1fcaf5"
 
 
     # creates correctly formatted buttons
@@ -63,7 +63,7 @@ def read_serial():
 
 # Function to update the tkinter Text widget
 def update_textbox(line):
-	applog(line)
+	applog(line+"\n")
 	filtr = text_filter.get(1.0, "end-1c")
 	if filtr != "":
 		if filtr in line:
@@ -215,7 +215,7 @@ def on_port_select(event):
 		# pass
 	else:
 		pass
-	root.title("Serial Reader on " + port)
+	root.title("Serial Readerdrop on " + port)
 
 
 if os.name== 'nt':
@@ -251,14 +251,31 @@ if os.name== 'nt':
 		# text_box.insert(tk.END, "No COM ports found.\n")
 		applog("No COM ports found.\n")
 else:
-	for i in range(9):
-		# Configure the serial port
-		try:
-			ser = serial.Serial('/dev/ttyUSB'+str(i), baudrate=9600, timeout=1)  # Replace 'COM3' with your port
-			root.title("Serial Reader on " + 'ttyUSB'+str(i))
-			break
-		except Exception as e:
-			text_box.insert(tk.END, f"Error: {e}\n")
+	  
+	applog( "we in linux\n")
+
+	com_ports = list_com_ports()
+
+	if com_ports:
+		for port in com_ports:
+			# scom_ports=str(com_ports)
+			if "/dev/ttyACM" in port or  "/dev/ttyUSB" in port:
+				port_dropdown['values'] = port	
+				port_dropdown.set(port) 
+				applog(port+"\n")		
+				ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+				root.title("Serial Reader on " + port)
+		
+		port_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+
+	# for i in range(9):
+	# 	# Configure the serial port
+	# 	try:
+	# 		ser = serial.Serial('/dev/ttyUSB'+str(i), baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+	# 		root.title("Serial Reader on " + 'ttyUSB'+str(i))
+	# 		break
+	# 	except Exception as e:
+	# 		text_box.insert(tk.END, f"Error: {e}\n")
 
 # Start the Tkinter event loop
 root.mainloop()
