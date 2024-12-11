@@ -2,6 +2,7 @@ import tkinter as tk
 import customtkinter
 from customtkinter import CTkButton
 from customtkinter import CTkEntry
+from customtkinter import CTk
 from tkinter import ttk
 import serial
 import threading
@@ -65,6 +66,19 @@ def list_com_ports():
     return available_ports
 ser = serial.Serial(None, baudrate=9600, timeout=1) 
 count=0
+
+
+# window=CTk()
+# def CenterWindowToDisplay(Screen: root, width: int, height: int, scale_factor: float = 1.0):
+#     """Centers the window to the main display/monitor"""
+#     screen_width = Screen.winfo_screenwidth()
+#     screen_height = Screen.winfo_screenheight()
+#     x = int(((screen_width/2) - (width/2)) * scale_factor)
+#     y = int(((screen_height/2) - (height/1.5)) * scale_factor)
+#     return f"{width}x{height}+{x}+{y}"
+
+
+
 # Function to read serial data
 def read_serial():
 	global count
@@ -104,6 +118,7 @@ def applog(msg):
 
 # Start the serial reading in a separate thread
 def start_reading():
+	start_button.configure(state="disabled")
 	thread = threading.Thread(target=read_serial, daemon=True)
 	thread.start()
 
@@ -118,27 +133,29 @@ def copytoclip():
 root = customtkinter.CTk()
 root.title("Serial Reader")
 
-topBottomFrame = tk.Frame(root, padx=0, bg="#ffff44")
-topBottomFrame.pack(side="top", fill="x")
+# topFrame = tk.Frame(root, padx=0, bg="#ffff44")
+topFrame=customtkinter.CTkFrame(root,border_width=1, border_color="#000000",fg_color="#056305")
+topFrame.pack(side="top", fill="x")
 
-botomframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00")
+botomframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#017066")
 botomframe.pack(side="bottom", fill="x")
 
-resultFrame = tk.Frame(topBottomFrame, padx=20, pady=4, bg="#2266ff")
+# resultFrame = tk.Frame(topFrame, padx=20, pady=4, bg="#2266ff")
+resultFrame=customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#049589")
 resultFrame.pack(fill="x",side="bottom") 
 
-filterFrame = tk.Frame(topBottomFrame, padx=20, pady=4, bg="#d366ff")
+filterFrame = customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#00a6a0")
 filterFrame.pack(fill="x",side="top") 
 
-postreadFrame= tk.Frame(topBottomFrame, padx=20, pady=4, bg="#d36644")
-postreadFrame.pack(fill="x",side="top") 
+postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
+postreadFrame.pack(fill="x",side="right") 
 
 # Text box to display data
 # text_box = tk.Text(resultFrame, height=20, width=50)
 text_box= mytextbox(resultFrame, height=300, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
-text_box.pack(padx=1, pady=1 , side="top")
+text_box.pack(padx=1, pady=1 , fill="x", side="top")
 
-buttonFrame = tk.Frame(resultFrame, padx=20, pady=4, bg="#029cb0")
+buttonFrame = customtkinter.CTkFrame(resultFrame,width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#b85f07")
 buttonFrame.pack(fill="x", side="bottom") 
 
 # Button to clear text area
@@ -154,16 +171,15 @@ clr_btn=mybutton(buttonFrame,text="clear text",bg=BUTTON_BACKGROUND,activebackgr
 clr_btn.pack(side="left",pady=2, padx=5)
 # Text box to display data
 text_box2=mytextbox(botomframe, height=80, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
-text_box2.pack(padx=2, pady=3)
+text_box2.pack(padx=2, fill="x",pady=3)
 
 
 # flbel=tk.Label(filterFrame,text="result filter")
 flbel=mylabel(filterFrame, txt="result filter", bg="transparent", justify="right", tcolor="#ffaa54")
-
 flbel.pack(side="left", padx=10)
 # Text box to display data
 # text_filter = tk.Text(filterFrame, height=1, width=30 )
-text_filter = mytextbox(filterFrame, height=1, width=300, bordercolor="#ffff00", fg="transparent", bg="transparent" )
+text_filter = mytextbox(filterFrame, height=1, width=100, bordercolor="#ffff00", fg="transparent", bg="transparent" )
 text_filter.pack(side="left", padx=0, pady=10)
 text_filter.insert(tk.END,"FD")
 
@@ -191,8 +207,8 @@ text_post_str.insert(tk.END,"\"")
 
 # Create a dropdown list (combobox)
 # port_dropdown = ttk.Combobox(botomframe, state="readonly", width=30)
-port_dropdown= customtkinter.CTkComboBox(root, state="readonly", values=["sapi","kebo", "babi"], width=300, border_width=1)
-port_dropdown.pack(pady=5)
+port_dropdown= customtkinter.CTkComboBox(buttonFrame, state="readonly", values=["sapi","kebo", "babi"], width=100, border_width=2,border_color="#01595a")
+port_dropdown.pack(pady=5, padx=3,side="left")
 
 
 # Button to start reading
@@ -321,5 +337,7 @@ else:
 	# 	except Exception as e:
 	# 		text_box.insert(tk.END, f"Error: {e}\n")
 
+# window.geometry(CenterWindowToDisplay(window, 900, 400, window._get_window_scaling()))
 # Start the Tkinter event loop
+root.iconbitmap('rc.ico')
 root.mainloop()
