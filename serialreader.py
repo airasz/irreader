@@ -115,7 +115,7 @@ def copytoclip():
 	pyperclip.copy(filtr)
 	# subprocess.run("pbcopy", text=True, input=filtr)
 # Main Tkinter window
-root = tk.Tk()
+root = customtkinter.CTk()
 root.title("Serial Reader")
 
 topBottomFrame = tk.Frame(root, padx=0, bg="#ffff44")
@@ -191,7 +191,7 @@ text_post_str.insert(tk.END,"\"")
 
 # Create a dropdown list (combobox)
 # port_dropdown = ttk.Combobox(botomframe, state="readonly", width=30)
-port_dropdown= customtkinter.CTkComboBox(botomframe, state="readonly", width=300, border_width=1)
+port_dropdown= customtkinter.CTkComboBox(root, state="readonly", values=["sapi","kebo", "babi"], width=300, border_width=1)
 port_dropdown.pack(pady=5)
 
 
@@ -254,7 +254,9 @@ if os.name== 'nt':
 	portn=0
 	if com_ports:
 		# print("Available COM ports:")
-		port_dropdown['values'] = com_ports	
+		# port_dropdown['values'] = com_ports	
+		port_dropdown.configure(values=com_ports)
+
 		# text_box.insert(tk.END, "Available COM ports:\n")
 		applog( "Available COM ports:\n")
 		for port in com_ports:
@@ -279,21 +281,28 @@ if os.name== 'nt':
 		# text_box.insert(tk.END, "No COM ports found.\n")
 		applog("No COM ports found.\n")
 else:
-	  
 	applog( "we in linux\n")
-
 	com_ports = list_com_ports()
-
+	accepted_port=[]
 	if com_ports:
+		# port_dropdown['values'] = com_ports	
+		# port_dropdown.configure(values=com_ports)
 		for port in com_ports:
 			# scom_ports=str(com_ports)
 			if "/dev/ttyACM" in port or  "/dev/ttyUSB" in port:
 				port_dropdown['values'] = port	
-				port_dropdown.set(port) 
+				accepted_port.append(port)
+				# port_dropdown.configure(values=com_ports)
+				# port_dropdown.set(port) 
 				applog(port+"\n")		
-				ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+				# ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				root.title("Serial Reader on " + port)
 		
+		port_dropdown.configure(values=accepted_port)
+		if accepted_port:
+			port_dropdown.set(accepted_port[0])	
+			ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+			
 		port_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 
 	# for i in range(9):
