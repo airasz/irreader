@@ -251,12 +251,13 @@ if os.name== 'nt':
 	# text_box.insert(tk.END, "we in windows\n")    
 	applog( "we in windows\n")
 	com_ports = list_com_ports()
+	accepted_port=[]
 	portn=0
 	if com_ports:
 		# print("Available COM ports:")
 		# port_dropdown['values'] = com_ports	
 		port_dropdown.configure(values=com_ports)
-
+		# accepted_port.append(port)
 		# text_box.insert(tk.END, "Available COM ports:\n")
 		applog( "Available COM ports:\n")
 		for port in com_ports:
@@ -274,6 +275,12 @@ if os.name== 'nt':
 		else:
 			port_dropdown.set(com_ports[1]) 
 
+		
+		port_dropdown.configure(values=accepted_port)
+		if accepted_port:
+			port_dropdown.set(accepted_port[0])	
+			ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+			
 		port_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 			
 	else:
