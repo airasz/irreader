@@ -339,5 +339,5 @@ else:
 
 # window.geometry(CenterWindowToDisplay(window, 900, 400, window._get_window_scaling()))
 # Start the Tkinter event loop
-root.iconbitmap('rc.ico')
+# root.iconbitmap('rc.ico')
 root.mainloop()
