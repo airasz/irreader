@@ -1,4 +1,7 @@
 import tkinter as tk
+import customtkinter
+from customtkinter import CTkButton
+from customtkinter import CTkEntry
 from tkinter import ttk
 import serial
 import threading
@@ -35,8 +38,25 @@ activeforeground=FOREGROUND,
 		command=command,
 	)
 	return button
+def mybutton(
+frame,
+text="",
+bg=BUTTON_BACKGROUND,
+fg=FOREGROUND,
+justify="left",
+activebackground=BUTTON_ACTIVE_BACKGROUND,
+command="",
+activeforeground=FOREGROUND,):
+	btn = CTkButton(frame, text=text, 
+            fg_color=BUTTON_BACKGROUND, command=command, corner_radius=50)
+	return btn
 
-
+def mytextbox(frame , height, width, bordercolor, bg, fg):
+	ctb=customtkinter.CTkTextbox(frame, height=height, width=width, border_color=bordercolor, bg_color=bg, fg_color=fg, corner_radius=12, border_width=1)
+	return ctb
+def mylabel (frame, txt, bg, justify, tcolor):
+	cl=customtkinter.CTkLabel(frame, text=txt, fg_color=bg, justify=justify, text_color= tcolor )
+	return cl
 def list_com_ports():
     ports = serial.tools.list_ports.comports()
     available_ports = []
@@ -67,7 +87,7 @@ def update_textbox(line):
 	filtr = text_filter.get(1.0, "end-1c")
 	if filtr != "":
 		if filtr in line:
-			print("contain "+ filtr)
+			# print("contain "+ filtr)
 			dfn= text_pre_str.get(1.0, "end-1c")
 			poststring= text_post_str.get(1.0, "end-1c")
 			if dfn!= "":
@@ -101,6 +121,9 @@ root.title("Serial Reader")
 topBottomFrame = tk.Frame(root, padx=0, bg="#ffff44")
 topBottomFrame.pack(side="top", fill="x")
 
+botomframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00")
+botomframe.pack(side="bottom", fill="x")
+
 resultFrame = tk.Frame(topBottomFrame, padx=20, pady=4, bg="#2266ff")
 resultFrame.pack(fill="x",side="bottom") 
 
@@ -111,65 +134,70 @@ postreadFrame= tk.Frame(topBottomFrame, padx=20, pady=4, bg="#d36644")
 postreadFrame.pack(fill="x",side="top") 
 
 # Text box to display data
-text_box = tk.Text(resultFrame, height=20, width=50)
+# text_box = tk.Text(resultFrame, height=20, width=50)
+text_box= mytextbox(resultFrame, height=300, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
 text_box.pack(padx=1, pady=1 , side="top")
 
 buttonFrame = tk.Frame(resultFrame, padx=20, pady=4, bg="#029cb0")
 buttonFrame.pack(fill="x", side="bottom") 
 
 # Button to clear text area
-clear_button = ttk.Button(buttonFrame, text="clear", command=cleartb)
+clear_button = CTkButton(buttonFrame, text="clear", command=cleartb, corner_radius=50)
 clear_button.pack(side="left",pady=2,padx=5)
 
 # Button copy to clipboard
-ctc_button = ttk.Button(buttonFrame, text="copy to clipboard", command=copytoclip)
+# ctc_button = ttk.Button(buttonFrame, text="copy to clipboard", command=copytoclip)
+ctc_button = mybutton(buttonFrame,text="copy to clipboard",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=copytoclip)
 ctc_button.pack(side="left",pady=2, padx=5)
 
-clr_btn=formatted_buttons(
-            buttonFrame,
-            text="clear text",
-            bg=BUTTON_BACKGROUND,
-            activebackground=BUTTON_ACTIVE_BACKGROUND,
-            command=cleartb,
-        )
+clr_btn=mybutton(buttonFrame,text="clear text",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=cleartb,)
 clr_btn.pack(side="left",pady=2, padx=5)
 # Text box to display data
-text_box2 = tk.Text(root, height=5, width=50)
-text_box2.pack(padx=1, pady=1)
+text_box2=mytextbox(botomframe, height=80, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
+text_box2.pack(padx=2, pady=3)
 
 
-flbel=tk.Label(filterFrame,text="result filter")
+# flbel=tk.Label(filterFrame,text="result filter")
+flbel=mylabel(filterFrame, txt="result filter", bg="transparent", justify="right", tcolor="#ffaa54")
+
 flbel.pack(side="left", padx=10)
 # Text box to display data
-text_filter = tk.Text(filterFrame, height=1, width=30 )
+# text_filter = tk.Text(filterFrame, height=1, width=30 )
+text_filter = mytextbox(filterFrame, height=1, width=300, bordercolor="#ffff00", fg="transparent", bg="transparent" )
 text_filter.pack(side="left", padx=0, pady=10)
 text_filter.insert(tk.END,"FD")
 
 
 
-fldfn=tk.Label(postreadFrame,text="pre string", bg="#222222", fg="#ffffff")
+# fldfn=tk.Label(postreadFrame,text="pre string", bg="#222222", fg="#ffffff")
+fldfn=mylabel(postreadFrame, txt="pre string", bg="transparent", justify="right", tcolor="#ffaa54")
 fldfn.pack(side="left",padx=3)
 
 # Text box to display data
-text_pre_str = tk.Text(postreadFrame, height=1, width=20)
+# text_pre_str = tk.Text(postreadFrame, height=1, width=20)
+text_pre_str= mytextbox(postreadFrame, height=1, width=100, bordercolor="#ffff00", fg="transparent",bg="transparent" )
 text_pre_str.pack(padx=3, pady=10, side="left")
 text_pre_str.insert(tk.END,"KEY_ = \"")
 # Text box to display data
 
-fldfn=tk.Label(postreadFrame,text="post string", bg="#222222", fg="#ffffff")
-fldfn.pack(side="left", padx=4)
+# fldfn=tk.Label(postreadFrame,text="post string", bg="#222222", fg="#ffffff")
+fldfnn=mylabel(postreadFrame, txt="post string", bg="transparent", justify="right", tcolor="#ffaa54")
+fldfnn.pack(side="left", padx=4)
 
-text_post_str = tk.Text(postreadFrame, height=1, width=20)
+# text_post_str = tk.Text(postreadFrame, height=1, width=20)
+text_post_str=  mytextbox(postreadFrame, height=1, width=100, bordercolor="#ffff00", fg="transparent",bg="transparent" )
 text_post_str.pack(side="left", padx=4, pady=10)
 text_post_str.insert(tk.END,"\"")
 
 # Create a dropdown list (combobox)
-port_dropdown = ttk.Combobox(root, state="readonly", width=30)
+# port_dropdown = ttk.Combobox(botomframe, state="readonly", width=30)
+port_dropdown= customtkinter.CTkComboBox(botomframe, state="readonly", width=300, border_width=1)
 port_dropdown.pack(pady=5)
 
 
 # Button to start reading
-start_button = ttk.Button(root, text="Start Reading", command=start_reading)
+# start_button = ttk.Button(botomframe, text="Start Reading", command=start_reading)
+start_button= mybutton(buttonFrame,text="Start Reading",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 start_button.pack(pady=10)
 
 # sport=''
