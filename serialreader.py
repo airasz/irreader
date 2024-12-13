@@ -191,7 +191,7 @@ fldfn.pack(side="left",padx=3)
 
 # Text box to display data
 # text_pre_str = tk.Text(postreadFrame, height=1, width=20)
-text_pre_str= mytextbox(postreadFrame, height=1, width=100, bordercolor="#ffff00", fg="transparent",bg="transparent" )
+text_pre_str= mytextbox(postreadFrame, height=1, width=200, bordercolor="#ffff00", fg="transparent",bg="transparent" )
 text_pre_str.pack(padx=3, pady=10, side="left")
 text_pre_str.insert(tk.END,"KEY_ = \"")
 # Text box to display data
