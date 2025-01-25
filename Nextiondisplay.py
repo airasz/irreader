@@ -25,12 +25,13 @@ def send_message(port, message):
     # except serial.SerialException as e:
     #     print(f"Failed to send message to {port}: {e}")
     #     available_ports = list_available_ports()
+    # message=message.replace("\n","\\r")
     if SERIAL_PORT == "unset":
         for i in available_ports:
             try:
                 with serial.Serial(i, baudrate=115200, timeout=1) as ser:
                     ser.write(message)
-                    print(f"Message sent to {i}: {message}")
+                    # print(f"Message sent to {i}: {message}")
                     ser.close()
             except serial.SerialException as e:
                 print(f"Failed to send message to {i}: {e}")
@@ -39,7 +40,7 @@ def send_message(port, message):
         try:
             with serial.Serial(port, baudrate=115200, timeout=1) as ser:
                 ser.write(message)
-                print(f"Message sent to {port}: {message}")
+                # print(f"Message sent to {port}: {message}")
         except serial.SerialException as e:
             print(f"Failed to send message to {port}: {e}")
             available_ports = list_available_ports()
@@ -56,6 +57,7 @@ class display:
     def send_command(self, cmd):
         global ENDER
         global SERIAL_PORT
+        cmd=cmd.replace("\n","\\r")
         data=cmd.encode() + ENDER
         send_message(SERIAL_PORT, data)
 
@@ -68,6 +70,8 @@ def send_command(command):
     #data=(command + '\xFF\xFF\xFF').encode('utf-8') 
     #print("data: "+str(data))
     ender=b'\xFF\xFF\xFF'
+
+    command=command.replace("\n","\\r")
     data=command.encode()
     ser.write((data+ender))  # Nextion commands end with three 0xFF
     #ser.write(b't1.txt="Hello, Nextion!"\xFF\xFF\xFF')  # Nextion commands end with three 0xFF
