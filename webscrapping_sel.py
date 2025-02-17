@@ -1,34 +1,37 @@
+from requests_html import HTMLSession
 import requests
 from bs4 import BeautifulSoup
 from tkinter import Tk, Label, Button, Entry, Text, Scrollbar, END, RIGHT, Y
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
+import time
 
+# Set up Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Run in headless mode (no GUI)
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
 
-import json
-import os.path
 
 bg = "#ffffff"
-
-urll = "https://www.goal.com/id/pertandingan/torino-vs-parma-calcio-1913/jreZNqxUooBMV_Z6ApGId"
-count = 23
-
-
-DATAFILE_ = "livescoredata.json"
-classname = "match-data_score__xQ29z"
-element = ""
-lscore = ""
-
-mscore = ""
-mteam = ""
 
 
 def scrape():
     url = url_entry.get()
-    classname = entry_classname.get()
-    element = entry_element.get()
+    classname = url_entry1.get()
     try:
         # Fetch the content from the URL
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad
+
+        session = HTMLSession()
+
+        resp = session.get(url)
+        resp.html.render()
+        html = resp.html.html
 
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -57,25 +60,16 @@ def scrape():
         # rslt=soup.select(".detailScore__live.detailScore__wrapper")
         # print(rslt.get_text())
         # text_area.insert(END,str(rslt)+'\n')
-        scores = soup.find_all(element, classname)
-        scre = ""
+        scores = soup.find_all("p", classname)
         for score in scores:
             # scr=score.select_one("div.detailScore__wrapper detailScore__live span")
             # scr=score.select_one("div.match-data_match-data__HGwNh span")
             print(score)
-            scre = score
             scr = score.select_one("." + classname)
             #
             # 	# text_area.delete(1.0, END)
             # text_area.insert(END,str(scr)+'\n')
             text_area.insert(END, score.get_text() + "\n")
-
-        # soup = BeautifulSoup(scre, "html.parser")
-        scoree = soup.find_all("sc")
-        for ssc in scoree:
-            info = ssc.get_text()
-            text_area.insert(END, score.get_text() + "\n")
-            print(ssc)
         # You can add more data extraction logic here
         # For example, to extract all paragraphs:
         # paragraphs = soup.find_all('p')
@@ -87,52 +81,9 @@ def scrape():
         text_area.insert(END, f"Error: {e}")
 
 
-def callback(event):
-    # select text
-    event.widget.select_range(0, "end")
-    # move cursor to the end
-    event.widget.icursor("end")
-    # stop propagation
-    return "break"
-
-def custom_paste(event):
-    try:
-        event.widget.delete("sel.first", "sel.last")
-    except:
-        pass
-    event.widget.insert("insert", event.widget.clipboard_get())
-    return "break"
-
-
-def loaddata():
-    global urll
-    global element
-    global classname
-    try:
-        with open(DATAFILE_, "r") as f:
-            data = json.load(f)
-            urll = data.get("url", urll)
-            element = data.get("element", element)
-            classname = data.get("classname", classname)
-    except FileNotFoundError:
-        pass
-
-
-loaddata()
-
-
-def savedata():
-    global urll
-    global element
-    global classname
-    jdata = {"url": urll, "element": element, "classname": classname}
-    with open(DATAFILE_, "w") as f:
-        json.dump(jdata, f)
-
-
 # Create the main window
 root = Tk()
-root.title("Web Scraper - Livescore") # Set the title of the window
+root.title("Web Scraper")
 
 # Create a label and entry for the URL
 url_label = Label(root, text="Enter URL:")
@@ -140,43 +91,22 @@ url_label.pack()
 
 url_entry = Entry(root, width=50)
 url_entry.pack()
-url_entry.bind("<Control-a>", callback)
-url_entry.bind("<Control-v>", custom_paste)
 url_entry.insert(
     END,
-    urll,
+    "https://idn00100.tigoals185.com/football/2701583-tokyo-verdy-vs-shimizu-spulse.html",
 )
-
-
-# Create a label and entry for the URL
-url_label_element = Label(root, text="Enter element type:")
-url_label_element.pack()
-
-entry_element = Entry(root, width=50)
-entry_element.pack()
-entry_element.bind("<Control-a>", callback)
-entry_element.bind("<<Paste>>", custom_paste)
-entry_element.insert(END, element)
-
 
 # Create a label and entry for the URL
 url_label1 = Label(root, text="Enter class name:")
 url_label1.pack()
 
-entry_classname = Entry(root, width=50)
-entry_classname.pack()
-entry_classname.bind("<Control-a>", callback)
-entry_classname.bind("<<Paste>>", custom_paste)
-entry_classname.insert(END, classname)
+url_entry1 = Entry(root, width=50)
+url_entry1.pack()
+url_entry1.insert(END, "detail__tscore")
 
 # Create a button to trigger scraping
 scrape_button = Button(root, text="Scrape", command=scrape)
 scrape_button.pack()
-
-# Create a button to trigger scraping
-save_button = Button(root, text="Save", command=savedata)
-save_button.pack()
-
 
 # Create a text area with scrollbar to display results
 text_area = Text(root, width=60, height=20)
@@ -185,9 +115,6 @@ text_area.pack()
 scrollbar = Scrollbar(root, command=text_area.yview)
 scrollbar.pack(side=RIGHT, fill=Y)
 text_area.config(yscrollcommand=scrollbar.set)
-
-photo = Tk.PhotoImage(file = 'Soccer-Ball-icon.png')
-root.wm_iconphoto(False, photo)
 
 # Start the Tkinter main loop
 root.mainloop()
