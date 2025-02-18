@@ -186,8 +186,8 @@ scrollbar = Scrollbar(root, command=text_area.yview)
 scrollbar.pack(side=RIGHT, fill=Y)
 text_area.config(yscrollcommand=scrollbar.set)
 
-photo = Tk.PhotoImage(file = 'Soccer-Ball-icon.png')
-root.wm_iconphoto(False, photo)
+# photo = Tk.PhotoImage(file = 'Soccer-Ball-icon.png')
+# root.wm_iconphoto(False, photo)
 
 # Start the Tkinter main loop
 root.mainloop()
