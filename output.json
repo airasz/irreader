@@ -1,0 +1,362 @@
+{
+    "match": {
+      "resolution": 720,
+      "hasLeagueStandings": true,
+      "matchId": 2591173,
+      "leagueId": 36,
+      "leagueEn": "Inggris: Liga Primer",
+      "matchTime_t": 1741537800000,
+      "startTime_t": 0,
+      "halfTime_t": 1741540874000,
+      "homeId": "27",
+      "awayId": "19",
+      "homeName": "Manchester United",
+      "awayName": "Arsenal",
+      "state": 2,
+      "homeScore": 1,
+      "awayScore": 0,
+      "homeLogoUrl": "http://zq.win007.com/Image/team/images/164577479190.png",
+      "awayLogoUrl": "http://zq.win007.com/Image/team/images/164577419697.png",
+      "otScore": null,
+      "penScore": null,
+      "countryLogo": "http://zq.titan007.com/Image/info/images/164326923816.png",
+      "countryId": "1",
+      "leagueLogo": "http://zq.titan007.com/Image/league_match/images/164577482086.png",
+      "teamLink": "manchester-united-vs-arsenal",
+      "matchType": 1,
+      "homeHalfScore": 1,
+      "awayHalfScore": 0,
+      "homeRed": 0,
+      "awayRed": 0,
+      "homeYellow": 0,
+      "awayYellow": 1,
+      "season": "2024-2025",
+      "location": "Old Trafford",
+      "weather": " Clear,7℃～8℃",
+      "info": null,
+      "isVipOnly": false,
+      "highlight": null
+    },
+    "hasEvents": true,
+    "event": [
+      {
+        "id": 12810463,
+        "isHome": false,
+        "kind": 3,
+        "time": "45",
+        "nameEn": "Leandro Trossard",
+        "nameChs": "特罗萨德",
+        "playerId": "102096",
+        "playerId2": "",
+        "overtime": "1"
+      },
+      {
+        "id": 12810483,
+        "isHome": true,
+        "kind": 1,
+        "time": "45",
+        "nameEn": "Bruno Joao N. Borges Fernandes",
+        "nameChs": "费尔南德斯",
+        "playerId": "48944",
+        "playerId2": "",
+        "overtime": "2"
+      }
+    ],
+    "lineup": {
+      "homeArray": "3421",
+      "awayArray": "433",
+      "matchId": 2591173,
+      "homeLineup": [
+        {
+          "playerId": "129150",
+          "nameEn": "Andre Onana",
+          "number": 24,
+          "positionId": 0
+        },
+        {
+          "playerId": "225599",
+          "nameEn": "Leny Yoro",
+          "number": 15,
+          "positionId": 1
+        },
+        {
+          "playerId": "82932",
+          "nameEn": "Victor Nilsson-Lindelof",
+          "number": 2,
+          "positionId": 1
+        },
+        {
+          "playerId": "146580",
+          "nameEn": "Matthijs de Ligt",
+          "number": 4,
+          "positionId": 1
+        },
+        {
+          "playerId": "153646",
+          "nameEn": "Diogo Dalot",
+          "number": 20,
+          "positionId": 2
+        },
+        {
+          "playerId": "91759",
+          "nameEn": "Carlos Henrique Casimiro,Casemiro",
+          "number": 18,
+          "positionId": 2
+        },
+        {
+          "playerId": "48944",
+          "nameEn": "Bruno Joao N. Borges Fernandes",
+          "number": 8,
+          "positionId": 2
+        },
+        {
+          "playerId": "146583",
+          "nameEn": "Noussair Mazraoui",
+          "number": 3,
+          "positionId": 2
+        },
+        {
+          "playerId": "70171",
+          "nameEn": "Christian Eriksen",
+          "number": 14,
+          "positionId": 3
+        },
+        {
+          "playerId": "220768",
+          "nameEn": "Alejandro Garnacho",
+          "number": 17,
+          "positionId": 3
+        },
+        {
+          "playerId": "166588",
+          "nameEn": "Joshua Zirkzee",
+          "number": 11,
+          "positionId": 4
+        }
+      ],
+      "awayLineup": [
+        {
+          "playerId": "119086",
+          "nameEn": "David Raya",
+          "number": 22,
+          "positionId": 0
+        },
+        {
+          "playerId": "179405",
+          "nameEn": "Jurrien Timber",
+          "number": 12,
+          "positionId": 1
+        },
+        {
+          "playerId": "167450",
+          "nameEn": "William Saliba",
+          "number": 2,
+          "positionId": 1
+        },
+        {
+          "playerId": "151417",
+          "nameEn": "Gabriel Dos Santos Magalhaes",
+          "number": 6,
+          "positionId": 1
+        },
+        {
+          "playerId": "182304",
+          "nameEn": "Riccardo Calafiori",
+          "number": 33,
+          "positionId": 1
+        },
+        {
+          "playerId": "123667",
+          "nameEn": "Martin Odegaard",
+          "number": 8,
+          "positionId": 2
+        },
+        {
+          "playerId": "124473",
+          "nameEn": "Thomas Partey",
+          "number": 5,
+          "positionId": 2
+        },
+        {
+          "playerId": "150472",
+          "nameEn": "Declan Rice",
+          "number": 41,
+          "positionId": 2
+        },
+        {
+          "playerId": "229902",
+          "nameEn": "Ethan Nwaneri",
+          "number": 53,
+          "positionId": 3
+        },
+        {
+          "playerId": "128577",
+          "nameEn": "Mikel Merino Zazon",
+          "number": 23,
+          "positionId": 3
+        },
+        {
+          "playerId": "102096",
+          "nameEn": "Leandro Trossard",
+          "number": 19,
+          "positionId": 3
+        }
+      ],
+      "awayBackup": [
+        {
+          "playerId": "164464",
+          "nameEn": "Norberto Murara Neto",
+          "number": 32,
+          "positionId": 0
+        },
+        {
+          "playerId": "168935",
+          "nameEn": "Gabriel Teodoro Martinelli Silva",
+          "number": 11,
+          "positionId": 0
+        },
+        {
+          "playerId": "142267",
+          "nameEn": "Jorge Luiz Frello Filho,Jorginho",
+          "number": 20,
+          "positionId": 0
+        },
+        {
+          "playerId": "174939",
+          "nameEn": "Jakub Kiwior",
+          "number": 15,
+          "positionId": 0
+        },
+        {
+          "playerId": "130132",
+          "nameEn": "Olexandr Zinchenko",
+          "number": 17,
+          "positionId": 0
+        },
+        {
+          "playerId": "145438",
+          "nameEn": "Benjamin William White",
+          "number": 4,
+          "positionId": 0
+        },
+        {
+          "playerId": "84385",
+          "nameEn": "Raheem Sterling",
+          "number": 30,
+          "positionId": 0
+        },
+        {
+          "playerId": "249070",
+          "nameEn": "Myles Lewis Skelly",
+          "number": 49,
+          "positionId": 0
+        },
+        {
+          "playerId": "128586",
+          "nameEn": "Kieran Tierney",
+          "number": 3,
+          "positionId": 0
+        }
+      ],
+      "homeBackup": [
+        {
+          "playerId": "201304",
+          "nameEn": "Rasmus Hojlund",
+          "number": 9,
+          "positionId": 0
+        },
+        {
+          "playerId": "270865",
+          "nameEn": "Harry Amass",
+          "number": 41,
+          "positionId": 0
+        },
+        {
+          "playerId": "257846",
+          "nameEn": "Toby Collyer",
+          "number": 43,
+          "positionId": 0
+        },
+        {
+          "playerId": "307380",
+          "nameEn": "Elyh Harrison",
+          "number": 50,
+          "positionId": 0
+        },
+        {
+          "playerId": "264694",
+          "nameEn": "Dermot Mee",
+          "number": 45,
+          "positionId": 0
+        },
+        {
+          "playerId": "244629",
+          "nameEn": "Ayden Heaven",
+          "number": 26,
+          "positionId": 0
+        },
+        {
+          "playerId": "286279",
+          "nameEn": "Jack Fletcher",
+          "number": 57,
+          "positionId": 0
+        },
+        {
+          "playerId": "300907",
+          "nameEn": "Jack Moorhouse",
+          "number": 64,
+          "positionId": 0
+        },
+        {
+          "playerId": "309961",
+          "nameEn": "Chido Obi-Martin",
+          "number": 56,
+          "positionId": 0
+        }
+      ]
+    },
+    "technicCount": "6,0,3;45,0,3;11,0,1;3,2,6;4,1,2;34,1,4;37,0,2;8,5,3;14,32%,68%;46,32%,68%;41,161,343;42,78%,90%;5,3,5;9,0,1;15,9,11;36,7,3;16,2,0;38,11,6;39,0,5;40,1,13;19,11,6;20,5,3;21,7,5;0,,*;43,21,76;44,6,34",
+    "hasTechnicCount": true,
+    "channels": [
+      {
+        "isVipOnly": false,
+        "id": 328301,
+        "sort": 1,
+        "category": 1,
+        "matchId": 2591173,
+        "label": "HD-(720P)"
+      },
+      {
+        "isVipOnly": false,
+        "id": 328264,
+        "sort": 2,
+        "category": 1,
+        "matchId": 2591173,
+        "label": "English"
+      },
+      {
+        "isVipOnly": false,
+        "id": 327441,
+        "sort": 4,
+        "category": 1,
+        "matchId": 2591173,
+        "label": "ไทย"
+      },
+      {
+        "isVipOnly": false,
+        "id": 327718,
+        "sort": 5,
+        "category": 1,
+        "matchId": 2591173,
+        "label": "Việt Nam"
+      },
+      {
+        "isVipOnly": false,
+        "id": 328117,
+        "sort": 6,
+        "category": 1,
+        "matchId": 2591173,
+        "label": "한국어"
+      }
+    ]
+  }

@@ -10,7 +10,7 @@ import json
 import os.path
 
 urll = "https://www.goal.com/id/pertandingan/torino-vs-parma-calcio-1913/jreZNqxUooBMV_Z6ApGId"
-count = 23
+count = 0
 
 DATAFILE_ = "livescore_data.json"
 display = serialdisplay.display()
@@ -114,14 +114,14 @@ class Scraper:
         if count == 5:
             # inte  ruptDisplay("resetscreen")
             pass
-        if count % 10 == 0:
-            interuptDisplay(lscore)
-        if count > 25:
+        # if count % 10 == 0:
+        #     interuptDisplay(lscore)
+        if count > 5:
             count = 0
             sblink = 0
             try:
 
-
+                print("scraping")
                 # Fetch JSON data from JSONPlaceholder
                 url = "https://cfapi.n2ew2a2pia.com/gatebd3b0e8531c52da6632e1fedb98524e8472a416a76232a5e426953a9dc/api/ftb/detail?d=idn00144.tigoals180.com&lang=4&id=2591173"
                 response = requests.get(urll)
@@ -136,6 +136,17 @@ class Scraper:
                         tm= data['match']['homeName'] + " vs " + data['match']['awayName']
                         scr=str(data['match']['homeScore']) + " - " + str(data['match']['awayScore'])
                         lscore = tm + "\n " + '0' + " > " + scr
+                        print(lscore)
+                    if scr != mscore:
+                        # print ("============new score")
+                        sblink = 1
+                        mscore = scr
+                    if tm == mteam:
+                        if sblink == 1:
+                            interuptDisplay("blink16")
+                            sblink = 0
+                    mteam = tm
+                        
                         # interuptDisplay(lscore)
                         # print("Home score:", data['match']['homeScore'])
                 else:
