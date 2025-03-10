@@ -8,6 +8,7 @@ import tornado.httpclient
 from time import sleep
 import json
 import os.path
+import datetime
 
 urll = "https://www.goal.com/id/pertandingan/torino-vs-parma-calcio-1913/jreZNqxUooBMV_Z6ApGId"
 count = 0
@@ -54,7 +55,7 @@ class MainHandler(tornado.web.RequestHandler):
         url = ""
         try:
             value = self.get_argument("url")
-            print("url " + value)
+            # print("url " + value)
         except:
             print("skiping cause argument not contain " + value)
             return
@@ -63,6 +64,10 @@ class MainHandler(tornado.web.RequestHandler):
             if not url:
                 self.write({"error": "Please provide a URL"})
                 return
+            if "idn00" in url:
+                tmp_url=url[0:url.index("idn00")-2]
+                url=tmp_url + url[url.index("&")+1:]
+                print("next url " + url)
             urll = url
             interuptDisplay("#blink=1")
             count = 24
@@ -93,6 +98,36 @@ class ScrapeHandler(tornado.web.RequestHandler):
         scraper = Scraper(url)
         self.write("url saved")
 
+def calculateMtime(startTime, endTime, secondHalf):
+    # Calculate the difference between the start and end time
+    print(f"Start time: {startTime}")
+    print(f"End time: {endTime}")
+
+    # Convert epoch time to a datetime object
+
+    sst = datetime.datetime.fromtimestamp(startTime/1000)
+    smt = datetime.datetime.fromtimestamp(endTime/1000)
+
+    print(f"s Start time: {sst}")
+    print(f"s End time: {smt}")
+
+    # Print the datetime object
+
+    # print("Datetime:", date_time)
+
+    # Calculate the difference in seconds
+    difference_in_seconds = sst - smt
+
+    # dt= datetime.datetime.fromtimestamp(difference_in_seconds/1000)
+    # print(f"dt: {dt}")
+
+
+    # Convert seconds to minutes
+    difference_in_minutes =int( difference_in_seconds.total_seconds() / 60) + 15 if secondHalf else int(difference_in_seconds.total_seconds() / 60)
+
+    # print(f"The difference between the two epoch times is {difference_in_minutes} minutes.")
+    # time_diff = endTime - startTime
+    return str(difference_in_minutes)
 
 class Scraper:
     def __init__(self, url):
@@ -132,51 +167,33 @@ class Scraper:
 
                     tm = ""
                     # Example: Print the title of the first post
+                    #matchtime= pertandingan dimulai, starttime= waktu pertandingan
                     if len(data) > 0:
                         tm= data['match']['homeName'] + " vs " + data['match']['awayName']
                         scr=str(data['match']['homeScore']) + " - " + str(data['match']['awayScore'])
-                        lscore = tm + "\n " + '0' + " > " + scr
+                        mnt=""
+                        if data['match']['halfTime_t'] ==0:
+                            mnt=calculateMtime(data['match']['startTime_t'], data['match']['matchTime_t'], False)
+                        else:
+                            mnt=calculateMtime(data['match']['startTime_t'], data['match']['startTime_t'], True)
+                        lscore = tm + "\n " + mnt + " > " + scr
                         print(lscore)
                     if scr != mscore:
                         # print ("============new score")
                         sblink = 1
                         mscore = scr
+
                     if tm == mteam:
                         if sblink == 1:
                             interuptDisplay("blink16")
                             sblink = 0
                     mteam = tm
-                        
-                        # interuptDisplay(lscore)
+
+                    # interuptDisplay(lscore)
                         # print("Home score:", data['match']['homeScore'])
                 else:
                     print(f"Failed to fetch data: {response.status_code}")
 
-            except Exception as e:
-                print(f"Error during scraping: {e}")
-
-    async def scraping(self):
-        global count
-        global urll
-        global classname
-        count += 1
-        if count > 10:
-            count = 0
-            try:
-                # Send HTTP GET request
-                response = requests.get(self.url)
-                response.raise_for_status()  # Raise an error for bad HTTP responses
-
-                # Parse HTML content
-                soup = BeautifulSoup(html, "html.parser")
-                title = soup.title.string if soup.title else "No title found"
-                scores = soup.find_all("span", classname)
-                for score in scores:
-                    # print(score)
-                    scr = score.select_one("." + classname)
-                # serialdisplay(score.get_text())
-                result = score.get_text()
-                print("result = " + result)
             except Exception as e:
                 print(f"Error during scraping: {e}")
 
@@ -225,7 +242,7 @@ if __name__ == "__main__":
         sleep(0.4)
         interuptDisplay("#dmode=0")
         sleep(0.3)
-        # interuptDisplay("#setnote=NOTE_B7")
+        interuptDisplay("#setnote=NOTE_B7")
         sleep(0.4)
         interuptDisplay("#resetscreen")
         print("Starting Tornado server on http://localhost:8890")
