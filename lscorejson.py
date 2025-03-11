@@ -9,6 +9,8 @@ from time import sleep
 import json
 import os.path
 import datetime
+import time
+# from datetime import datetime
 
 urll = "https://www.goal.com/id/pertandingan/torino-vs-parma-calcio-1913/jreZNqxUooBMV_Z6ApGId"
 count = 0
@@ -26,7 +28,9 @@ SHT = ""
 TMP_FT = 0
 SFT = ""
 OLD_MNT = ""
+OLD_MATCH_STATE=0# 0=not started, 1=firsthalf, 2=half time , 3=second half, -1=full time
 
+MATCH_STATE=""
 
 def interuptDisplay(msg):
     display.display(msg, False)
@@ -99,6 +103,15 @@ class ScrapeHandler(tornado.web.RequestHandler):
         self.write("url saved")
 
 def calculateMtime(startTime, endTime, secondHalf):
+
+    # Get the current time in epoch format
+    epoch_time = time.time()
+
+    # print(epoch_time)
+    epoch_time_milliseconds = int(epoch_time * 1000)
+    print(epoch_time_milliseconds)
+
+
     # Calculate the difference between the start and end time
     print(f"Start time: {startTime}")
     print(f"End time: {endTime}")
@@ -115,15 +128,17 @@ def calculateMtime(startTime, endTime, secondHalf):
 
     # print("Datetime:", date_time)
 
+    # now = datetime.now()
+    now = datetime.datetime.now()
     # Calculate the difference in seconds
-    difference_in_seconds = sst - smt
+    difference_in_seconds = now - smt
 
     # dt= datetime.datetime.fromtimestamp(difference_in_seconds/1000)
     # print(f"dt: {dt}")
 
 
     # Convert seconds to minutes
-    difference_in_minutes =int( difference_in_seconds.total_seconds() / 60) + 15 if secondHalf else int(difference_in_seconds.total_seconds() / 60)
+    difference_in_minutes =int( difference_in_seconds.total_seconds() / 60) + 30 if secondHalf else int(difference_in_seconds.total_seconds() / 60)
 
     # print(f"The difference between the two epoch times is {difference_in_minutes} minutes.")
     # time_diff = endTime - startTime
@@ -145,57 +160,77 @@ class Scraper:
         global SFT
         global TMP_FT
         global OLD_MNT
+        global OLD_MATCH_STATE
+        global MATCH_STATE
         count += 1
-        if count == 5:
+        if count == 5 and MATCH_STATE=="FT":
             # inte  ruptDisplay("resetscreen")
-            pass
+            # pass
         # if count % 10 == 0:
-        #     interuptDisplay(lscore)
-        if count > 5:
+            interuptDisplay(lscore)
+        if count > 5 :
             count = 0
-            sblink = 0
-            try:
+            if MATCH_STATE!="FT":
+                sblink = 0
+                try:
 
-                print("scraping")
-                # Fetch JSON data from JSONPlaceholder
-                url = "https://cfapi.n2ew2a2pia.com/gatebd3b0e8531c52da6632e1fedb98524e8472a416a76232a5e426953a9dc/api/ftb/detail?d=idn00144.tigoals180.com&lang=4&id=2591173"
-                response = requests.get(urll)
+                    print("scraping")
+                    # Fetch JSON data from JSONPlaceholder
+                    url = "https://cfapi.n2ew2a2pia.com/gatebd3b0e8531c52da6632e1fedb98524e8472a416a76232a5e426953a9dc/api/ftb/detail?d=idn00144.tigoals180.com&lang=4&id=2591173"
+                    response = requests.get(urll)
 
-                if response.status_code == 200:
-                    data = response.json()
-                    # print(data)  # Print the entire list of posts
+                    if response.status_code == 200:
+                        data = response.json()
+                        # print(data)  # Print the entire list of posts
 
-                    tm = ""
-                    # Example: Print the title of the first post
-                    #matchtime= pertandingan dimulai, starttime= waktu pertandingan
-                    if len(data) > 0:
-                        tm= data['match']['homeName'] + " vs " + data['match']['awayName']
-                        scr=str(data['match']['homeScore']) + " - " + str(data['match']['awayScore'])
-                        mnt=""
-                        if data['match']['halfTime_t'] ==0:
-                            mnt=calculateMtime(data['match']['startTime_t'], data['match']['matchTime_t'], False)
-                        else:
-                            mnt=calculateMtime(data['match']['startTime_t'], data['match']['startTime_t'], True)
-                        lscore = tm + "\n " + mnt + " > " + scr
-                        print(lscore)
-                    if scr != mscore:
-                        # print ("============new score")
-                        sblink = 1
-                        mscore = scr
+                        tm = ""
+                        # Example: Print the title of the first post
+                        #matchtime= pertandingan dimulai, starttime= waktu pertandingan
+                        if len(data) > 0:
+                            tm= data['match']['homeName'] + " vs " + data['match']['awayName']
+                            scr=str(data['match']['homeScore']) + " - " + str(data['match']['awayScore'])
+                            mnt=""
+                            if data['match']['halfTime_t'] ==0:
+                                mnt=calculateMtime(data['match']['startTime_t'], data['match']['matchTime_t'], False)
+                            else:
+                                mnt=calculateMtime(data['match']['startTime_t'], data['match']['halfTime_t'], True)
 
-                    if tm == mteam:
-                        if sblink == 1:
-                            interuptDisplay("blink16")
-                            sblink = 0
-                    mteam = tm
+                            if data['match']['state'] !=OLD_MATCH_STATE :
+                                OLD_MATCH_STATE=data['match']['state']
+                                if data['match']['state'] == 1:
+                                    interuptDisplay("#longbeep")
+                                elif data['match']['state'] == 2:
+                                    interuptDisplay("#endmatch")
+                                elif data['match']['state'] == 3:
+                                    interuptDisplay("#longbeep")
+                                elif data['match']['state'] == -1:
+                                    interuptDisplay("#endmatch")
 
-                    # interuptDisplay(lscore)
-                        # print("Home score:", data['match']['homeScore'])
-                else:
-                    print(f"Failed to fetch data: {response.status_code}")
+                            if data['match']['state']==2:
+                                mnt="HT"
+                            elif data['match']['state']==-1:
+                                mnt="FT"
 
-            except Exception as e:
-                print(f"Error during scraping: {e}")
+                            lscore = tm + "\n " + mnt + " > " + scr
+                            print(lscore)
+                        if scr != mscore:
+                            # print ("============new score")
+                            sblink = 1
+                            mscore = scr
+
+                        if tm == mteam:
+                            if sblink == 1:
+                                interuptDisplay("#blink=4")
+                                sblink = 0
+                        mteam = tm
+                        MATCH_STATE=mnt
+                        interuptDisplay(lscore)
+                            # print("Home score:", data['match']['homeScore'])
+                    else:
+                        print(f"Failed to fetch data: {response.status_code}")
+
+                except Exception as e:
+                    print(f"Error during scraping: {e}")
 
 
 async def periodic_scraping(scraper):
