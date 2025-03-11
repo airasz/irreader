@@ -14,6 +14,7 @@ import time
 
 urll = "https://www.goal.com/id/pertandingan/torino-vs-parma-calcio-1913/jreZNqxUooBMV_Z6ApGId"
 count = 0
+_TS=30
 
 DATAFILE_ = "livescore_data.json"
 display = serialdisplay.display()
@@ -47,7 +48,7 @@ settings = dict(
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         # self.write("Web Scraper Running! Check the terminal for scraping logs.")
-        self.render("webscr.html", wsurl=urll)
+        self.render("webscr.html", wsurl=urll, tms=_TS)
 
     async def post(self):
         global count
@@ -57,10 +58,16 @@ class MainHandler(tornado.web.RequestHandler):
         global SFT
         global TMP_FT
         global MATCH_STATE
+        global _TS
         url = ""
         try:
             value = self.get_argument("url")
             # print("url " + value)
+        except:
+            print("skiping cause argument not contain " + value)
+            return
+        try:
+            timeshifter= self.get_argument("ts")
         except:
             print("skiping cause argument not contain " + value)
             return
@@ -84,9 +91,13 @@ class MainHandler(tornado.web.RequestHandler):
             with open(DATAFILE_, "w") as f:
                 json.dump(jdata, f)
 
+        if timeshifter!="":
+            tms=int(timeshifter)
+            _TS=tms
+            interuptDisplay("#blink=1")
             # pass
         # ok()
-        self.render("webscr.html", wsurl=urll)
+        self.render("webscr.html", wsurl=urll, tms=_TS)
 
 
 # Tornado request handler
@@ -105,7 +116,7 @@ class ScrapeHandler(tornado.web.RequestHandler):
         self.write("url saved")
 
 def calculateMtime(startTime, endTime, secondHalf):
-
+    global _TS
     # Get the current time in epoch format
     epoch_time = time.time()
 
@@ -140,7 +151,7 @@ def calculateMtime(startTime, endTime, secondHalf):
 
 
     # Convert seconds to minutes
-    difference_in_minutes =int( difference_in_seconds.total_seconds() / 60) + 30 if secondHalf else int(difference_in_seconds.total_seconds() / 60)
+    difference_in_minutes =int( difference_in_seconds.total_seconds() / 60) + _TS if secondHalf else int(difference_in_seconds.total_seconds() / 60)
 
     # print(f"The difference between the two epoch times is {difference_in_minutes} minutes.")
     # time_diff = endTime - startTime
