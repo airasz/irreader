@@ -56,6 +56,7 @@ class MainHandler(tornado.web.RequestHandler):
         global SHT
         global SFT
         global TMP_FT
+        global MATCH_STATE
         url = ""
         try:
             value = self.get_argument("url")
@@ -73,6 +74,7 @@ class MainHandler(tornado.web.RequestHandler):
                 url=tmp_url + url[url.index("&")+1:]
                 print("next url " + url)
             urll = url
+            MATCH_STATE=""
             interuptDisplay("#blink=1")
             count = 24
             # result = await fetch_and_scrape(url)
