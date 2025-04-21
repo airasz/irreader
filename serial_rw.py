@@ -64,7 +64,7 @@ def list_com_ports():
 	for port in ports:
 		available_ports.append(port.device)
 	return available_ports
-	
+
 ser = serial.Serial(None, baudrate=9600, timeout=1) 
 count=0
 
@@ -146,8 +146,13 @@ root = customtkinter.CTk()
 root.title("Serial Reader")
 
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
-topFrame=customtkinter.CTkFrame(root,border_width=1, border_color="#000000",fg_color="#056305")
+topFrame=customtkinter.CTkFrame(root,border_width=1,border_color="#000000",fg_color="#0060ea", width=300, height=100)
 topFrame.pack(side="top", fill="x")
+topLeftFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+topLeftFrame.pack(side="left", padx=5, pady=5)
+
+baudFrame= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#017066")
+baudFrame.pack()
 
 botomframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#017066")
 botomframe.pack(side="bottom", fill="x")
@@ -157,15 +162,15 @@ resultFrame=customtkinter.CTkFrame(topFrame, width=300, height=100, border_width
 resultFrame.pack(fill="x",side="bottom") 
 
 filterFrame = customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#00a6a0")
-filterFrame.pack(fill="x",side="top") 
+#filterFrame.pack(fill="x",side="top") 
 
 postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
-postreadFrame.pack(fill="x",side="right") 
+#postreadFrame.pack(fill="x",side="right") 
 
 # Text box to display data
 # text_box = tk.Text(resultFrame, height=20, width=50)
 text_box= mytextbox(resultFrame, height=300, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
-text_box.pack(padx=1, pady=1 , fill="x", side="top")
+text_box.pack(padx=1, pady=1 , fill="x")
 
 buttonFrame = customtkinter.CTkFrame(resultFrame,width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#b85f07")
 buttonFrame.pack(fill="x", side="bottom") 
