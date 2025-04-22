@@ -120,6 +120,7 @@ def read_serial():
 				count+=1
 				if count==1:
 					update_textbox(line)  # Update the textbox with the received data
+					applog(line)
 				if count > 2:
 					count=0
 				# update_textbox(str(count) + " > "+line)  # Update the textbox with the received data
@@ -137,6 +138,70 @@ def write_serial(data):
 		print(f"Failed to send message to {port}: {e}")
 		# available_ports = list_available_ports()
 		return False
+
+def send_command(event):
+	global ser
+	command = commaand_entry.get()
+	crlf = crlf_dropdown.get()
+	if crlf == "CRLF":
+		command += "\r\n"
+	elif crlf == "LF":
+		command += "\n"
+	elif crlf == "CR":
+		command += "\r"
+	else:
+		pass
+	if ser.isOpen():
+		write_serial(command)
+		applog(f"Command sent: {command}\n")
+		hystory_listbox.insert(tk.END, command)
+		hystory_listbox.see(tk.END)  # Scroll to the end
+		commaand_entry.delete(0, tk.END)
+	else:
+		commaand_entry.delete(0, tk.END)
+		applog("Serial port is not open.\n")
+def traceBackCommand(event):
+	global ser
+	command = hystory_listbox.get(hystory_listbox.curselection())
+	crlf = crlf_dropdown.get()
+	if crlf == "CRLF":
+		command += "\r\n"
+	elif crlf == "LF":
+		command += "\n"
+	elif crlf == "CR":
+		command += "\r"
+	else:
+		pass
+	if ser.isOpen():
+		# write_serial(command)
+		# applog(f"Command sent: {command}\n")
+		commaand_entry.insert(0, command)
+	else:
+		commaand_entry.delete(0, tk.END)
+		applog("Serial port is not open.\n")
+
+def traceForwardCommand(event):
+	global ser
+	command = hystory_listbox.get(hystory_listbox.curselection())
+	crlf = crlf_dropdown.get()
+	if crlf == "CRLF":
+		command += "\r\n"
+	elif crlf == "LF":
+		command += "\n"
+	elif crlf == "CR":
+		command += "\r"
+	else:
+		pass
+	if ser.isOpen():
+		# write_serial(command)
+		# applog(f"Command sent: {command}\n")
+		# commaand_entry.delete(0, tk.END)
+		commaand_entry.insert(0, command)
+	else:
+		commaand_entry.insert(0, command)
+		# commaand_entry.delete(0, tk.END)
+		applog("Serial port is not open.\n")
+
 # Function to update the tkinter Text widget
 def update_textbox(line):
 	applog(line+"\n")
@@ -160,9 +225,21 @@ def applog(msg):
 
 # Start the serial reading in a separate thread
 def start_reading():
-	start_button.configure(state="disabled")
+	open_button.configure(text="close", command=close_serial)
 	thread = threading.Thread(target=read_serial, daemon=True)
 	thread.start()
+
+def close_serial():
+	if ser.isOpen():
+		ser.close()
+		open_button.configure(text="open", command=start_reading)
+		text_box.insert(tk.END, f"Serial Port: {ser} is closed\n")
+		applog( f"Serial Port: {ser} is closed\n")
+	else:
+
+		open_button.configure(text="open", command=start_reading)
+		text_box.insert(tk.END, f"Serial Port: {ser} is already closed\n")
+		applog( f"Serial Port: {ser} is already closed\n")
 
 def cleartb():
 	text_box.delete("1.0", "end")	
@@ -628,6 +705,10 @@ def save_config():
 		json.dump(config, f, indent=4)
 save_config()
 setupserial()
+
+commaand_entry.bind("<Return>", send_command)
+commaand_entry.bind("<Up>", traceBackCommand)
+commaand_entry.bind("<Down>", traceForwardCommand)
 # flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
 # baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
 # device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
