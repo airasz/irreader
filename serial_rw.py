@@ -3,6 +3,7 @@ import customtkinter
 from customtkinter import CTkButton
 from customtkinter import CTkEntry
 from customtkinter import CTk
+from CTkListbox import *
 from tkinter import ttk
 import serial
 import threading
@@ -148,20 +149,39 @@ root.title("Serial Reader")
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 topFrame=customtkinter.CTkFrame(root,border_width=1,border_color="#000000",fg_color="#0060ea", width=300, height=100)
 topFrame.pack(side="top", fill="x")
-topLeftFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+topTopFrame.pack(side="top", padx=5, pady=5)
+topLeftFrame= customtkinter.CTkFrame(topFrame, width=300,  border_width=1, border_color="#aaff00", fg_color="#ff0066")
 topLeftFrame.pack(side="left", padx=5, pady=5)
+topRightFrame= customtkinter.CTkFrame(topFrame, width=300, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+topRightFrame.pack(side="left", padx=5, pady=5)
+topNextFrame= customtkinter.CTkFrame(topFrame, width=300, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+topNextFrame.pack(side="left", padx=5, pady=5)
 
-baudFrame= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#017066")
-baudFrame.pack()
+
+subTopLeftFrame1= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+subTopLeftFrame1.pack(side="top", padx=5, pady=5)
+subTopLeftFrame2= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+subTopLeftFrame2.pack(side="bottom", padx=5, pady=5)
+subTopLeftFrame3= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+subTopLeftFrame3.pack(side="bottom", padx=5, pady=5)
+subTopRightFrame1= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+subTopRightFrame1.pack(side="top", padx=5, pady=5)
+subTopRightFrame2= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+subTopRightFrame2.pack(side="bottom", padx=5, pady=5)
+subTopRightFrame3= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#ff0066")
+subTopRightFrame3.pack(side="bottom", padx=5, pady=5)
+
 
 botomframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#017066")
 botomframe.pack(side="bottom", fill="x")
-
+middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#aa8800")
+middleFrame.pack( fill="x")
 # resultFrame = tk.Frame(topFrame, padx=20, pady=4, bg="#2266ff")
-resultFrame=customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#049589")
-resultFrame.pack(fill="x",side="bottom") 
+resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#049589")
+# resultFrame.pack(fill="x",side="bottom") 
 
-filterFrame = customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#00a6a0")
+filterFrame = customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#00a6a0")
 #filterFrame.pack(fill="x",side="top") 
 
 postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
@@ -232,6 +252,56 @@ port_dropdown.pack(pady=5, padx=3,side="left")
 # start_button = ttk.Button(botomframe, text="Start Reading", command=start_reading)
 start_button= mybutton(buttonFrame,text="Start Reading",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 start_button.pack(pady=10)
+
+open_button= mybutton(topTopFrame,text="open",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
+open_button.pack(pady=10, padx=5, side="left")
+
+label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="right", tcolor="#ffaa54")
+label_device.pack(side="left", padx=10)
+device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a")
+device_dropdown.pack(pady=5, padx=3,side="left")
+cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_rts.pack(pady=5, padx=3,side="left")
+cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_dtr.pack(pady=5, padx=3,side="left")
+cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_ar.pack(pady=5, padx=3,side="left")
+
+label_baud=mylabel(subTopLeftFrame1, txt="Baudrate", bg="transparent", justify="right", tcolor="#ffaa54")
+label_baud.pack(side="left", padx=10)
+baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly", values=["9600","115200", "230400"], width=100, border_width=2,border_color="#01595a")
+baudrate_dropdown.pack(pady=5, padx=3,side="left")
+label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor="#ffaa54")
+label_flow.pack(side="left", padx=10)
+flowrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame2, state="readonly", values=["None","XON/XOFF", "RTS/CTS"], width=100, border_width=2,border_color="#01595a")
+flowrate_dropdown.pack(pady=5, padx=3,side="left")
+label_openmode=mylabel(subTopLeftFrame3, txt="Open Mode", bg="transparent", justify="right", tcolor="#ffaa54")
+label_openmode.pack(side="left", padx=10)
+openmode_dropdown= customtkinter.CTkComboBox(subTopLeftFrame3, state="readonly", values=["Blocking","Non Blocking"], width=100, border_width=2,border_color="#01595a")
+openmode_dropdown.pack(pady=5, padx=3,side="left")
+label_databit=mylabel(subTopRightFrame1, txt="Data Bit", bg="transparent", justify="right", tcolor="#ffaa54")
+label_databit.pack(side="left", padx=10)
+databit_dropdown= customtkinter.CTkComboBox(subTopRightFrame1, state="readonly", values=["5","6", "7", "8"], width=100, border_width=2,border_color="#01595a")
+databit_dropdown.pack(pady=5, padx=3,side="left")
+label_parity=mylabel(subTopRightFrame2, txt="Parity", bg="transparent", justify="right", tcolor="#ffaa54")
+label_parity.pack(side="left", padx=10)
+parity_dropdown= customtkinter.CTkComboBox(subTopRightFrame2, state="readonly", values=["None","Even", "Odd"], width=100, border_width=2,border_color="#01595a")
+parity_dropdown.pack(pady=5, padx=3,side="left")
+label_stopbit=mylabel(subTopRightFrame3, txt="Stop Bit", bg="transparent", justify="right", tcolor="#ffaa54")
+label_stopbit.pack(side="left", padx=10)
+stopbit_dropdown= customtkinter.CTkComboBox(subTopRightFrame3, state="readonly", values=["1","2"], width=100, border_width=2,border_color="#01595a")
+stopbit_dropdown.pack(pady=5, padx=3,side="left")
+
+cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Control Character", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_ctrl_char.pack(pady=5, padx=3,side="left")
+cb_show_timestamp= customtkinter.CTkCheckBox(topNextFrame, text="Show Timestamp", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_show_timestamp.pack(pady=5, padx=3,side="left")
+
+hystory_listbox=CTkListbox(middleFrame, height=300, border_width=2,border_color="#01595a")
+hystory_listbox.pack(pady=5, padx=3,side="left", fill="x")
+hystory_listbox.insert(0, "Hystory here..")
+# label_baud=mylabel(topTopFrame, txt="Baudrate", bg="transparent", justify="right", tcolor="#ffaa54")
+
 
 # sport=''
 # def cekport():
