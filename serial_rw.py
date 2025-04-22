@@ -94,6 +94,8 @@ def list_com_ports():
 	return available_ports
 
 ser = serial.Serial(None, baudrate=9600, timeout=1) 
+# if ser.isOpen():
+# 	ser.close()
 count=0
 
 
@@ -170,8 +172,86 @@ def copytoclip():
 	pyperclip.copy(filtr)
 	# subprocess.run("pbcopy", text=True, input=filtr)
 # Main Tkinter window
+
+
+
+def on_baudrate_select(event):
+	"""Handle the event when a new item is selected in the combobox."""
+	selected_baudrate = baudrate_dropdown.get()
+	applog( f"Selected Baudrate: {selected_baudrate}\n")
+	if selected_baudrate != 'custom':
+		if ser and ser.isOpen():
+			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			ser.close()
+		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
+	else:
+		pass
+
+def on_flowrate_select(event):
+	global ser
+	"""Handle the event when a new item is selected in the combobox."""
+	# print(f"Selected Flow Control: {selected_flowrate}")
+	selected_flowrate = flowrate_dropdown.get()
+	applog( f"Selected Flow Control: {selected_flowrate}\n")
+	if selected_flowrate == 'none':
+		if ser and ser.isOpen():
+			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			cb_rts.pack()#show the RTS checkbox
+			cb_dtr.pack()
+		# 	ser.close()
+		# ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
+	elif selected_flowrate == 'Hardware':
+		if ser and ser.isOpen():
+			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			cb_rts.pack_forget()#hide the RTS checkbox
+			cb_dtr.pack_forget()
+		# 	ser.close()
+		# ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
+	elif selected_flowrate == 'Software':
+		if ser and ser.isOpen():
+			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			cb_rts.pack()#show the RTS checkbox
+			cb_dtr.pack()
+		# 	ser.close()
+		# ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
+	else:
+		pass
+def on_parity_select(event):
+	global ser
+	"""Handle the event when a new item is selected in the combobox."""
+	selected_parity = parity_dropdown.get()
+	applog( f"Selected Parity: {selected_parity}\n")
+	if selected_parity != 'none':
+		if ser and (ser.isOpen()== True):
+			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			ser.close()
+		setupserial
+		# ser = serial.Serial(device_dropdown.get(), baudrate=int(baudrate_dropdown.get()), parity=getParity(selected_parity), timeout=1)  # Replace 'COM3' with your port
+	else:
+		pass
+
+def on_port_select(event):
+	global ser
+	"""Handle the event when a new item is selected in the combobox."""
+	selected_port = device_dropdown.get()
+	print(f"Selected Port: {selected_port}")
+	# text_box.insert(tk.END, f"Selected Port: {selected_port}\n")
+	applog( f"Selected Port: {selected_port}\n")
+	
+	if selected_port!= 'COM1':
+		if ser and ser.isOpen():			
+			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			ser.close()
+		ser = serial.Serial(selected_port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+
+		# pass
+	else:
+		pass
+	root.title("Serial Readerdrop on " + port)
+
+
 root = customtkinter.CTk()
-root.title("Serial Reader")
+root.title("Serialone v 1")
 
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 #====level 1 frame=========
@@ -329,7 +409,7 @@ open_button.pack(pady=10, padx=5, side="left")
 
 label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="right", tcolor="#ffaa54")
 label_device.pack(side="left", padx=10)
-device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a")
+device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a", command=on_port_select)
 device_dropdown.pack(pady=5, padx=3,side="left")
 cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_rts.pack(pady=5, padx=3,side="left")
@@ -344,7 +424,7 @@ baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly",
 baudrate_dropdown.pack(pady=5, padx=3,side="left")
 label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor="#ffaa54")
 label_flow.pack(side="left", padx=10)
-flowrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame2, state="readonly", values=["None","Hardware", "Software"], width=100, border_width=2,border_color="#01595a")
+flowrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame2, state="readonly", values=["none","Hardware", "Software"], width=100, border_width=2,border_color="#01595a", command=on_flowrate_select)
 flowrate_dropdown.pack(pady=5, padx=3,side="left")
 label_openmode=mylabel(subTopLeftFrame3, txt="Open Mode", bg="transparent", justify="right", tcolor="#ffaa54")
 label_openmode.pack(side="left", padx=10)
@@ -356,7 +436,7 @@ databit_dropdown= customtkinter.CTkComboBox(subTopRightFrame1, state="readonly",
 databit_dropdown.pack(pady=5, padx=3,side="left")
 label_parity=mylabel(subTopRightFrame2, txt="Parity", bg="transparent", justify="right", tcolor="#ffaa54")
 label_parity.pack(side="left", padx=10)
-parity_dropdown= customtkinter.CTkComboBox(subTopRightFrame2, state="readonly", values=["None","Even", "Odd", "Space", "Mark"], width=100, border_width=2,border_color="#01595a")
+parity_dropdown= customtkinter.CTkComboBox(subTopRightFrame2, state="readonly", values=["none","Even", "Odd", "Space", "Mark"], width=100, border_width=2,border_color="#01595a",command=on_parity_select)
 parity_dropdown.pack(pady=5, padx=3,side="left")
 label_stopbit=mylabel(subTopRightFrame3, txt="Stop Bit", bg="transparent", justify="right", tcolor="#ffaa54")
 label_stopbit.pack(side="left", padx=10)
@@ -402,67 +482,6 @@ cb_appendlog.pack(pady=5, padx=3,side="left")
 
 
 
-
-def on_baudrate_select(event):
-	"""Handle the event when a new item is selected in the combobox."""
-	selected_baudrate = baudrate_dropdown.get()
-	applog( f"Selected Baudrate: {selected_baudrate}\n")
-	if selected_baudrate != 'custom':
-		if ser and ser.is_open():
-			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			ser.close()
-		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
-	else:
-		pass
-
-def on_flowrate_select(event):
-	"""Handle the event when a new item is selected in the combobox."""
-	print(f"Selected Flow Control: {selected_flowrate}")
-	selected_flowrate = flowrate_dropdown.get()
-	applog( f"Selected Flow Control: {selected_flowrate}\n")
-	if selected_flowrate == 'none':
-		if ser and ser.is_open():
-			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			cb_rts.pack()#show the RTS checkbox
-			cb_dtr.pack()
-			ser.close()
-		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
-	elif selected_flowrate == 'Hardware':
-		if ser and ser.is_open():
-			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			cb_rts.pack_forget()#hide the RTS checkbox
-			cb_dtr.pack_forget()
-			ser.close()
-		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
-	elif selected_flowrate == 'Software':
-		if ser and ser.is_open():
-			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			cb_rts.pack()#show the RTS checkbox
-			cb_dtr.pack()
-			ser.close()
-		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
-	else:
-		pass
-
-def on_port_select(event):
-	"""Handle the event when a new item is selected in the combobox."""
-	selected_port = device_dropdown.get()
-	print(f"Selected Port: {selected_port}")
-	# text_box.insert(tk.END, f"Selected Port: {selected_port}\n")
-	applog( f"Selected Port: {selected_port}\n")
-	
-	if selected_port!= 'COM1':
-		if ser and ser.is_open():			
-			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			ser.close()
-		ser = serial.Serial(selected_port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
-
-		# pass
-	else:
-		pass
-	root.title("Serial Readerdrop on " + port)
-
-
 if os.name== 'nt':
 	print("we in windows")
 	# text_box.insert(tk.END, "we in windows\n")    
@@ -490,7 +509,7 @@ if os.name== 'nt':
 				root.title("Serialone on " + port)
 		print(f'total port: {portn}')
 		if portn ==1:
-			device_dropdown.set(com_ports[0]) item
+			device_dropdown.set(com_ports[0])
 		else:
 			device_dropdown.set(com_ports[1]) 
 
@@ -501,7 +520,7 @@ if os.name== 'nt':
 			# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 			
 		device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
-			item
+			# item
 		applog("No COM ports found.\n")
 else:
 	applog( "we in linux\n")
@@ -542,13 +561,36 @@ else:
 # root.iconbitmap('rc.ico')
 
 # device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+def getParity(parity):
+	print(f"parity > {parity}")
+	if "Even"in parity:
+		return serial.PARITY_EVEN
+	elif "Odd" in parity:
+		return serial.PARITY_ODD
+	elif "Space" in parity:
+		return serial.PARITY_SPACE
+	elif "Mark" in parity:
+		return serial.PARITY_MARK
+	elif "none" in parity:
+		return serial.PARITY_NONE
+	
+def getStopBit(stopbit):
+	if stopbit == "1":
+		return serial.STOPBITS_ONE
+	elif stopbit == "2":
+		return serial.STOPBITS_TWO
+	else:
+		return serial.STOPBITS_ONE
+
 def setupserial():
+	global ser
 	ser=serial.Serial(
 		port=device_dropdown.get(),
-		baudrate=baudrate_dropdown.get(),
-		parity=parity_dropdown.get(),
-		stopbits=stopbit_dropdown.get(),
-		bytesize=databit_dropdown.get(),
+		baudrate=int(baudrate_dropdown.get()),
+		parity=getParity(parity_dropdown.get()),
+		
+		stopbits=getStopBit(stopbit_dropdown.get()),
+		bytesize=int(databit_dropdown.get()),
 		timeout=1
 	)
 def load_config():
@@ -561,7 +603,7 @@ def load_config():
 			openmode_dropdown.set(config['openmode'])
 			databit_dropdown.set(config['databit'])
 			parity_dropdown.set(config['parity'])
-			# print(f'parity > {config['parity']}')
+			print(f'parity > {config['parity']}')
 			stopbit_dropdown.set(config['stopbit'])
 			crlf_dropdown.set(config['crlf'])
 			chr_del_dropdown.set(config['chr_del'])
@@ -585,11 +627,17 @@ def save_config():
 	with open('srwconfig.json', 'w') as f:
 		json.dump(config, f, indent=4)
 save_config()
-
-
-flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
-baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
-device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+setupserial()
+# flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
+# baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
+# device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 print("Serial Reader is running...")
-
+def on_closing():
+	if ser.isOpen():
+		ser.close()
+		print("Serial port closed.")
+		applog("Serial port closed.\n")
+	save_config()
+	root.destroy()
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
