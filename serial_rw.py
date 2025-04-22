@@ -417,21 +417,28 @@ def on_baudrate_select(event):
 
 def on_flowrate_select(event):
 	"""Handle the event when a new item is selected in the combobox."""
+	print(f"Selected Flow Control: {selected_flowrate}")
 	selected_flowrate = flowrate_dropdown.get()
 	applog( f"Selected Flow Control: {selected_flowrate}\n")
 	if selected_flowrate == 'none':
 		if ser and ser.is_open():
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			cb_rts.pack()#show the RTS checkbox
+			cb_dtr.pack()
 			ser.close()
 		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
 	elif selected_flowrate == 'Hardware':
 		if ser and ser.is_open():
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			cb_rts.pack_forget()#hide the RTS checkbox
+			cb_dtr.pack_forget()
 			ser.close()
 		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
 	elif selected_flowrate == 'Software':
 		if ser and ser.is_open():
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
+			cb_rts.pack()#show the RTS checkbox
+			cb_dtr.pack()
 			ser.close()
 		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
 	else:
@@ -440,7 +447,7 @@ def on_flowrate_select(event):
 def on_port_select(event):
 	"""Handle the event when a new item is selected in the combobox."""
 	selected_port = device_dropdown.get()
-	#     print(f"Selected Port: {selected_port}")
+	print(f"Selected Port: {selected_port}")
 	# text_box.insert(tk.END, f"Selected Port: {selected_port}\n")
 	applog( f"Selected Port: {selected_port}\n")
 	
@@ -483,7 +490,7 @@ if os.name== 'nt':
 				root.title("Serialone on " + port)
 		print(f'total port: {portn}')
 		if portn ==1:
-			device_dropdown.set(com_ports[0]) 
+			device_dropdown.set(com_ports[0]) item
 		else:
 			device_dropdown.set(com_ports[1]) 
 
@@ -494,10 +501,7 @@ if os.name== 'nt':
 			# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 			
 		device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
-			
-	else:
-		print("No COM ports found.")
-		# text_box.insert(tk.END, "No COM ports found.\n")
+			item
 		applog("No COM ports found.\n")
 else:
 	applog( "we in linux\n")
@@ -511,15 +515,15 @@ else:
 			if "/dev/ttyACM" in port or  "/dev/ttyUSB" in port:
 				device_dropdown['values'] = port	
 				accepted_port.append(port)
-				# port_dropdown.configure(values=com_ports)
+				# port_dropdown.configure(values=com_ports)item
 				# port_dropdown.set(port) 
 				applog(port+"\n")		
 				# ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				root.title("Serialone on " + port)
 		
-		port_dropdown.configure(values=accepted_port)
+		device_dropdown.configure(values=accepted_port)
 		if accepted_port:
-			device_dropdownset(accepted_port[0])	
+			device_dropdown.set(accepted_port[0])	
 			ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 			
 		device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
@@ -537,6 +541,7 @@ else:
 # Start the Tkinter event loop
 # root.iconbitmap('rc.ico')
 
+# device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 def setupserial():
 	ser=serial.Serial(
 		port=device_dropdown.get(),
@@ -556,6 +561,7 @@ def load_config():
 			openmode_dropdown.set(config['openmode'])
 			databit_dropdown.set(config['databit'])
 			parity_dropdown.set(config['parity'])
+			# print(f'parity > {config['parity']}')
 			stopbit_dropdown.set(config['stopbit'])
 			crlf_dropdown.set(config['crlf'])
 			chr_del_dropdown.set(config['chr_del'])
@@ -579,5 +585,11 @@ def save_config():
 	with open('srwconfig.json', 'w') as f:
 		json.dump(config, f, indent=4)
 save_config()
+
+
+flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
+baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
+device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+print("Serial Reader is running...")
 
 root.mainloop()
