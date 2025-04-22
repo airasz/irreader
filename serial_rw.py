@@ -40,10 +40,14 @@ CORAL = "#FF7F50"
 GOLD = "#FFD700"
 SILVER = "#C0C0C0"
 
+
 BG_LVL_1 = NAVY
 BG_LVL_2 = BLUE
 BG_LVL_3 = LIGHTBLUE
 BG_LVL_4 = CYAN
+
+POINTER_HISTORY = 0
+CMD_HISTORY = []
 
 # creates correctly formatted buttons
 def formatted_buttons(
@@ -139,9 +143,21 @@ def write_serial(data):
 		# available_ports = list_available_ports()
 		return False
 
+def draw_history():
+	global ser
+	global POINTER_HISTORY
+	global CMD_HISTORY
+	hystory_listbox.delete(0, tk.END)
+	for i in range(0, len(CMD_HISTORY)):
+		hystory_listbox.insert(i, CMD_HISTORY[i])
+	# hystory_listbox.see(tk.END)  # Scroll to the end
+	hystory_listbox.see(POINTER_HISTORY)
+
 def send_command(event):
 	global ser
-	command = commaand_entry.get()
+	global POINTER_HISTORY
+	global CMD_HISTORY
+	command = command_entry.get()
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
 		command += "\r\n"
@@ -155,14 +171,24 @@ def send_command(event):
 		write_serial(command)
 		applog(f"Command sent: {command}\n")
 		hystory_listbox.insert(tk.END, command)
-		hystory_listbox.see(tk.END)  # Scroll to the end
-		commaand_entry.delete(0, tk.END)
+		CMD_HISTORY.append(command)
+		POINTER_HISTORY=hystory_listbox.size()
+		print(f'POINTER_HISTORY: {POINTER_HISTORY}')
+		command_entry.delete(0, tk.END)
+		save_history()
+		draw_history()
 	else:
-		commaand_entry.delete(0, tk.END)
+		command_entry.delete(0, tk.END)
+		hystory_listbox.see(tk.END)  # Scroll to the end
 		applog("Serial port is not open.\n")
 def traceBackCommand(event):
 	global ser
-	command = hystory_listbox.get(hystory_listbox.curselection())
+	global POINTER_HISTORY
+	# hystory_listbox.selection_set(0)
+	# command = hystory_listbox.get(hystory_listbox.curselection(POINTER_HISTORY))
+	POINTER_HISTORY=POINTER_HISTORY - 1
+	command = hystory_listbox.get(POINTER_HISTORY)
+	# POINTER_HISTORY=POINTER_HISTORY - 1
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
 		command += "\r\n"
@@ -175,14 +201,18 @@ def traceBackCommand(event):
 	if ser.isOpen():
 		# write_serial(command)
 		# applog(f"Command sent: {command}\n")
-		commaand_entry.insert(0, command)
+		command_entry.delete(0, tk.END)
+		command_entry.insert(0, command)
 	else:
-		commaand_entry.delete(0, tk.END)
+		command_entry.delete(0, tk.END)
 		applog("Serial port is not open.\n")
 
 def traceForwardCommand(event):
 	global ser
-	command = hystory_listbox.get(hystory_listbox.curselection())
+	global POINTER_HISTORY
+	POINTER_HISTORY=POINTER_HISTORY + 1
+	command = hystory_listbox.get(POINTER_HISTORY)
+	# POINTER_HISTORY=POINTER_HISTORY + 1
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
 		command += "\r\n"
@@ -195,13 +225,34 @@ def traceForwardCommand(event):
 	if ser.isOpen():
 		# write_serial(command)
 		# applog(f"Command sent: {command}\n")
-		# commaand_entry.delete(0, tk.END)
-		commaand_entry.insert(0, command)
+		command_entry.delete(0, tk.END)
+		command_entry.insert(0, command)
 	else:
-		commaand_entry.insert(0, command)
-		# commaand_entry.delete(0, tk.END)
+		command_entry.delete(0, tk.END)
+		command_entry.insert(0, command)
+		# command_entry.delete(0, tk.END)
 		applog("Serial port is not open.\n")
 
+def on_hystory_select(event):
+	global POINTER_HISTORY
+	"""Handle the event when a new item is selected in the listbox."""
+	POINTER_HISTORY = hystory_listbox.curselection()
+	print(f"POINTER_HISTORY select: {POINTER_HISTORY}")
+	selected_item = hystory_listbox.get(hystory_listbox.curselection())
+	applog(f"Selected item: {selected_item}\n")
+	command_entry.delete(0, tk.END)
+	command_entry.insert(0, selected_item)
+	# hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
+	# hystory_listbox.bind("<Double-Button-1>", traceBackCommand)
+	# hystory_listbox.bind("<Button-3>", traceForwardCommand)
+def on_hystory_double_click(event):
+	"""Handle the event when a new item is selected in the listbox."""
+	selected_item = hystory_listbox.get(hystory_listbox.curselection())
+	applog(f"Selected item: {selected_item}\n")
+	ser.write(selected_item.encode("utf-8"))
+	# hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
+	# hystory_listbox.bind("<Double-Button-1>", traceBackCommand)
+	# hystory_listbox.bind("<Button-3>", traceForwardCommand)
 # Function to update the tkinter Text widget
 def update_textbox(line):
 	applog(line+"\n")
@@ -230,17 +281,19 @@ def start_reading():
 	thread.start()
 
 def close_serial():
+	global ser
 	if ser.isOpen():
 		ser.close()
-		open_button.configure(text="open", command=start_reading)
+		open_button.configure(text="open", command=setupserial)
 		text_box.insert(tk.END, f"Serial Port: {ser} is closed\n")
 		applog( f"Serial Port: {ser} is closed\n")
-	else:
+		sh_setting_button.pack(side="left", padx=5, pady=5)
+	# else:
 
-		open_button.configure(text="open", command=start_reading)
-		text_box.insert(tk.END, f"Serial Port: {ser} is already closed\n")
-		applog( f"Serial Port: {ser} is already closed\n")
-
+	# 	open_button.configure(text="open", command=start_reading)
+	# 	text_box.insert(tk.END, f"Serial Port: {ser} is already closed\n")
+	# 	applog( f"Serial Port: {ser} is already closed\n")
+	status_label.configure(text="Serial closed")
 def cleartb():
 	text_box.delete("1.0", "end")	
 
@@ -260,9 +313,22 @@ def on_baudrate_select(event):
 		if ser and ser.isOpen():
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
 			ser.close()
-		ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
+		# ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
+		setupserial()  # Replace 'COM3' with your port
 	else:
 		pass
+def show_setting():
+	global ser
+	print("show setting")
+	if ser.isOpen() == True:
+		if sh_setting_button.cget("text") == "show setting":
+			print("show setting")
+			sh_setting_button.configure(text="hide setting")
+			bottomTopFrame.pack(after=topTopFrame, side="top", padx=5, pady=5, fill="x")	
+		else:
+			print("hide setting")
+			sh_setting_button.configure(text="show setting")
+			bottomTopFrame.pack_forget()
 
 def on_flowrate_select(event):
 	global ser
@@ -273,8 +339,8 @@ def on_flowrate_select(event):
 	if selected_flowrate == 'none':
 		if ser and ser.isOpen():
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			cb_rts.pack()#show the RTS checkbox
-			cb_dtr.pack()
+			cb_rts.pack(after=device_dropdown, side="left")#show the RTS checkbox
+			cb_dtr.pack(after=cb_rts, side="left")
 		# 	ser.close()
 		# ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)  # Replace 'COM3' with your port
 	elif selected_flowrate == 'Hardware':
@@ -287,8 +353,8 @@ def on_flowrate_select(event):
 	elif selected_flowrate == 'Software':
 		if ser and ser.isOpen():
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
-			cb_rts.pack()#show the RTS checkbox
-			cb_dtr.pack()
+			cb_rts.pack(side="left")#show the RTS checkbox
+			cb_dtr.pack(side="left")
 		# 	ser.close()
 		# ser = serial.Serial(device_dropdown.get(), baudrate=int(selected_baudrate), timeout=1)
 	else:
@@ -326,6 +392,13 @@ def on_port_select(event):
 		pass
 	root.title("Serial Readerdrop on " + port)
 
+def on_mouse_wheel_listbox(event):
+	"""Handle the event when the mouse wheel is scrolled."""
+	print(f"Mouse wheel scrolled: {event.delta}")
+	if event.delta > 0:
+		hystory_listbox.yview_scroll(-1, "units")
+	else:
+		hystory_listbox.yview_scroll(1, "units")
 
 root = customtkinter.CTk()
 root.title("Serialone v 1")
@@ -336,13 +409,15 @@ topFrame=customtkinter.CTkFrame(root,border_width=1,border_color="#000000",fg_co
 topFrame.pack(side="top", fill="x")
 middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
 middleFrame.pack( fill="x", side="top", padx=5, pady=5)
-botomframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
-botomframe.pack(side="top", fill="x")
+monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
+monitorframe.pack(side="top", fill="x")
+statusFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)	
+statusFrame.pack(side="top", fill="x")
 #===========level 2 frame=========
 topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_2)
 topTopFrame.pack(side="top", padx=5, pady=5)
 bottomTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_2)
-bottomTopFrame.pack(side="top", padx=5, pady=5)
+# bottomTopFrame.pack(side="top", padx=5, pady=5)
 
 topLeftFrame= customtkinter.CTkFrame(bottomTopFrame, width=300,  border_width=1, border_color="#aaff00", fg_color=BG_LVL_3)
 topLeftFrame.pack(side="left", padx=5, pady=5)
@@ -367,16 +442,19 @@ subTopRightFrame3= customtkinter.CTkFrame(topRightFrame, width=300, height=100, 
 subTopRightFrame3.pack(side="bottom", padx=5, pady=5)
 
 
-hystory_listbox=CTkListbox(middleFrame, height=200, border_width=2,border_color="#01595a")
+hystory_listbox=CTkListbox(middleFrame, height=200, border_width=2,border_color="#01595a",bg_color=YELLOW, fg_color=YELLOW)
 hystory_listbox.pack(pady=5, padx=3, expand=True, side="top", fill="x")
 hystory_listbox.insert(0, "Hystory here..")
 inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
 inputFrame.pack( fill="x", side="top", padx=5, pady=5)
 
+status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor="#ffaa54")
+# status_label=customtkinter.CTkLabel(statusFrame, wraplength=100, text="Status", fg_color="transparent", justify="right", text_color="#ffaa54")
+# status_label.configure(wraplength=300)
+status_label.pack(side="left", padx=1,expand=True, fill="x")
 
-
-commaand_entry= customtkinter.CTkEntry(inputFrame, width=60, height=20, border_width=1, border_color="#aaff00", fg_color="#aa8800")
-commaand_entry.pack(side="left", padx=5, pady=5)
+command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=1, border_color="#aaff00", fg_color="#aa8800")
+command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
 
 crlf_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["CRLF","LF", "CR"], width=100, border_width=2,border_color="#01595a")
 crlf_dropdown.pack(pady=5, padx=3,side="left")
@@ -392,10 +470,10 @@ datamode_dropdown.pack(pady=5, padx=3,side="left")
 # resultFrame = tk.Frame(topFrame, padx=20, pady=4, bg="#2266ff")
 #===========#monitor
 
-texbox_monitor=mytextbox(botomframe, height=80, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
+texbox_monitor=mytextbox(monitorframe, height=80, width=500, bordercolor="#ffff00", fg=YELLOW, bg="transparent" )
 texbox_monitor.pack(padx=2, fill="x",pady=3)
 
-resultControlFrame= customtkinter.CTkFrame(botomframe,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
+resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
 resultControlFrame.pack(fill="x",side="top")
 
 resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#049589")
@@ -471,13 +549,13 @@ text_post_str.pack(side="left", padx=4, pady=10)
 text_post_str.insert(tk.END,"\"")
 
 # Create a dropdown list (combobox)
-# port_dropdown = ttk.Combobox(botomframe, state="readonly", width=30)
+# port_dropdown = ttk.Combobox(monitorframe, state="readonly", width=30)
 port_dropdown= customtkinter.CTkComboBox(buttonFrame, state="readonly", values=["sapi","kebo", "babi"], width=100, border_width=2,border_color="#01595a")
 port_dropdown.pack(pady=5, padx=3,side="left")
 
 
 # Button to start reading
-# start_button = ttk.Button(botomframe, text="Start Reading", command=start_reading)
+# start_button = ttk.Button(monitorframe, text="Start Reading", command=start_reading)
 start_button= mybutton(buttonFrame,text="Start Reading",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 start_button.pack(pady=10)
 
@@ -495,9 +573,13 @@ cb_dtr.pack(pady=5, padx=3,side="left")
 cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_ar.pack(pady=5, padx=3,side="left")
 
+
+sh_setting_button= mybutton(topTopFrame,text="show setting",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=show_setting)
+sh_setting_button.pack(pady=10, padx=5, side="left")
+
 label_baud=mylabel(subTopLeftFrame1, txt="Baudrate", bg="transparent", justify="right", tcolor="#ffaa54")
 label_baud.pack(side="left", padx=10)
-baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly", values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"], width=100, border_width=2,border_color="#01595a")
+baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly", values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"], width=100, border_width=2,border_color="#01595a", command=on_baudrate_select)
 baudrate_dropdown.pack(pady=5, padx=3,side="left")
 label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor="#ffaa54")
 label_flow.pack(side="left", padx=10)
@@ -670,6 +752,13 @@ def setupserial():
 		bytesize=int(databit_dropdown.get()),
 		timeout=1
 	)
+	sser=str(ser)
+	sser= sser.replace(",", ", ")
+	wl=root.winfo_width()
+	status_label.configure(wraplength=wl)
+	status_label.configure(text=f"Serial Port: {sser} ")
+
+	
 def load_config():
 	try:
 		with open('srwconfig.json', 'r') as f:
@@ -688,6 +777,27 @@ def load_config():
 	except FileNotFoundError:
 		print("Config file not found, using default settings.")
 load_config();
+
+def load_history():
+	global CMD_HISTORY
+	global POINTER_HISTORY
+	try:
+		with open('cmd_history.json', 'r') as f:
+			history = json.load(f)
+			hystory_listbox.delete(0, tk.END)
+			for cmd in history:
+				hystory_listbox.insert(tk.END, cmd)
+				CMD_HISTORY.append(cmd)
+			POINTER_HISTORY = len(CMD_HISTORY) 
+	except FileNotFoundError:
+		print("History file not found, using empty history.")
+load_history()
+
+def save_history():
+	global CMD_HISTORY
+	with open('cmd_history.json', 'w') as f:
+		json.dump(CMD_HISTORY, f, indent=4)
+
 def save_config():
 	config = {
 		# 'port': device_dropdown.get(),
@@ -706,13 +816,40 @@ def save_config():
 save_config()
 setupserial()
 
-commaand_entry.bind("<Return>", send_command)
-commaand_entry.bind("<Up>", traceBackCommand)
-commaand_entry.bind("<Down>", traceForwardCommand)
-# flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
+if ser.isOpen():
+	open_button.configure(text="close", command=close_serial)
+	sh_setting_button.pack_forget()
+else:
+	open_button.configure(text="open", command=setupserial)
+
+	ser.close()
+	# text_box.insert(tk.END, f"Serial Port: {ser} is closed\n")
+	applog( f"Serial Port: {ser} is closed\n")
+
 # baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
+command_entry.bind("<Return>", send_command)
+command_entry.bind("<Up>", traceBackCommand)
+command_entry.bind("<Down>", traceForwardCommand)
+hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
+hystory_listbox.bind("<Double-Button-1>", on_hystory_double_click)
+# hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
+hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
+# flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
 # device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 print("Serial Reader is running...")
+
+def center_window(window):
+    window.update_idletasks()
+    width = window.winfo_width()
+    height = window.winfo_height()
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
+	# y = (screen_height - (height / 2)) // 2
+    window.geometry(f"{width}x{height}+{x}+{y}")
+center_window(root)
+
 def on_closing():
 	if ser.isOpen():
 		ser.close()
