@@ -20,7 +20,7 @@ BUTTON_ACTIVE_BACKGROUND = "#1fcaf5"
 RED = "#FF0000"
 GREEN = "#00FF00"
 BLUE = "#0000FF"
-LIGHTBLUE = "#ADD8E6"
+LIGHTBLUE = "#9DB8E6"
 YELLOW = "#FFFF00"
 ORANGE = "#FFA500"
 PURPLE = "#800080"
@@ -168,18 +168,19 @@ def send_command(event):
 		command += "\r"
 	else:
 		pass
+
+	if len(CMD_HISTORY) == MAX_HISTORY:
+		CMD_HISTORY.pop(0)
+	# hystory_listbox.insert(tk.END, command)
+	CMD_HISTORY.append(command)
+	POINTER_HISTORY=hystory_listbox.size()
+	print(f'POINTER_HISTORY: {POINTER_HISTORY}')
+	command_entry.delete(0, tk.END)
+	save_history()
+	draw_history()
 	if ser.isOpen():
 		write_serial(command)
 		applog(f"Command sent: {command}\n")
-		if len(CMD_HISTORY) == MAX_HISTORY:
-			CMD_HISTORY.pop(0)
-		# hystory_listbox.insert(tk.END, command)
-		CMD_HISTORY.append(command)
-		POINTER_HISTORY=hystory_listbox.size()
-		print(f'POINTER_HISTORY: {POINTER_HISTORY}')
-		command_entry.delete(0, tk.END)
-		save_history()
-		draw_history()
 	else:
 		command_entry.delete(0, tk.END)
 		hystory_listbox.see(tk.END)  # Scroll to the end
@@ -464,10 +465,10 @@ subTopRightFrame2.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
 subTopRightFrame3= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
 subTopRightFrame3.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
 
-historyFrame=customtkinter.CTkFrame(middleFrame, height=200, border_width=0,border_color=BLACK, fg_color=RED) 
+historyFrame=customtkinter.CTkFrame(middleFrame, height=200, border_width=0,border_color=BLACK, fg_color=NAVY) 	 
 historyFrame.pack(pady=1, padx=1, expand=True, side="top", fill="x")
-hystory_listbox=CTkListbox(historyFrame, height=200, border_width=0,border_color="#01595a",bg_color=CYAN, fg_color=YELLOW, text_color=NAVY)
-hystory_listbox.pack(padx=15, pady=15, expand=True, side="top", fill="x")
+hystory_listbox=CTkListbox(historyFrame, height=200, border_width=0,border_color="#01595a",bg_color=NAVY, fg_color=CYAN, text_color=NAVY)
+hystory_listbox.pack(padx=5, pady=5, expand=True, side="top", fill="x")
 hystory_listbox.insert(0, "Hystory here..")
 inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
 inputFrame.pack( fill="x", side="top", padx=5, pady=5)
@@ -630,7 +631,7 @@ cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Control Character", 
 cb_ctrl_char.pack(pady=5, padx=3,side="top",anchor="w")
 cb_show_timestamp= customtkinter.CTkCheckBox(topNextFrame, text="Show Timestamp", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_show_timestamp.pack(pady=5, padx=3,side="top",anchor="w")
-setlogFrame= customtkinter.CTkFrame(topNextFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#00b8cc")
+setlogFrame= customtkinter.CTkFrame(topNextFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=CYAN)
 setlogFrame.pack(fill="x",expand=True, side="bottom", padx=5, pady=5)
 savelog_label=mylabel(setlogFrame, txt="Save Log", bg="transparent", justify="right", tcolor=NAVY)
 savelog_label.pack(side="left", padx=10)
@@ -844,7 +845,8 @@ def save_config():
 	with open('srwconfig.json', 'w') as f:
 		json.dump(config, f, indent=4)
 save_config()
-setupserial()
+
+# setupserial()
 
 # baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
 command_entry.bind("<Return>", send_command)

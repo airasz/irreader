@@ -24,5 +24,10 @@
     "rotation=2",
     "ada",
     "setnote",
-    "hello\r\n"
+    "hello",
+    "#rotation=2",
+    "#setnote=NOTE_A7",
+    "#setnote=NOTE_A7",
+    "#setnote=NOTE_A7",
+    "#resetscreen\r\n"
 ]
