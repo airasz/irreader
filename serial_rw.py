@@ -86,7 +86,7 @@ activeforeground=FOREGROUND,):
 	return btn
 
 def mytextbox(frame , height, width, bordercolor, bg, fg):
-	ctb=customtkinter.CTkTextbox(frame, height=height, width=width, border_color=bordercolor, bg_color=bg, fg_color=fg, corner_radius=12, border_width=1)
+	ctb=customtkinter.CTkTextbox(frame, height=height, width=width, border_color=bordercolor, bg_color=bg, fg_color=fg, corner_radius=12, border_width=0)
 	return ctb
 def mylabel (frame, txt, bg, justify, tcolor):
 	cl=customtkinter.CTkLabel(frame, text=txt, fg_color=bg, justify=justify, text_color= tcolor )
@@ -193,7 +193,7 @@ def traceBackCommand(event):
 	command = hystory_listbox.get(POINTER_HISTORY)
 	if POINTER_HISTORY > 1 and POINTER_HISTORY < hystory_listbox.size():
 		tmpPH=POINTER_HISTORY-1
-		for i in range(5,0,-1):
+		for i in range(3,0,-1):
 			if (POINTER_HISTORY-i)>=0:
 				tmpPH=POINTER_HISTORY-i
 				# hystory_listbox.see(tmpPH)
@@ -269,7 +269,7 @@ def on_hystory_double_click(event):
 	# hystory_listbox.bind("<Button-3>", traceForwardCommand)
 # Function to update the tkinter Text widget
 def update_textbox(line):
-	applog(line+"\n")
+	# applog(line+"\n")
 	filtr = text_filter.get(1.0, "end-1c")
 	if filtr != "":
 		if filtr in line:
@@ -282,6 +282,14 @@ def update_textbox(line):
 				line+=poststring
 			text_box.insert(tk.END, f"{line}\n")
 			text_box.see(tk.END)  # Scroll to the end
+	if line!="":
+		if datamode_dropdown.get()=="ASCII":
+			applog(line+"\n")
+		elif datamode_dropdown.get()=="HEX":
+			applog(line.encode())
+			applog("\n")
+
+
 
 
 def applog(msg):
@@ -290,6 +298,7 @@ def applog(msg):
 
 # Start the serial reading in a separate thread
 def start_reading():
+	print("start reading")
 	open_button.configure(text="close", command=close_serial)
 	thread = threading.Thread(target=read_serial, daemon=True)
 	thread.start()
@@ -419,60 +428,61 @@ root.title("Serialone v 1")
 
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 #====level 1 frame=========
-topFrame=customtkinter.CTkFrame(root,border_width=1,border_color="#000000",fg_color=BG_LVL_1, width=300, height=100)
+topFrame=customtkinter.CTkFrame(root,border_width=0,border_color="#000000",fg_color=BG_LVL_1, width=300, height=100)
 topFrame.pack(side="top", fill="x")
-middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
-middleFrame.pack( fill="x", side="top", padx=5, pady=5)
-monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
+middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
+middleFrame.pack( fill="x", side="top")
+monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
 monitorframe.pack(side="top", fill="x")
-statusFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)	
+statusFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)	
 statusFrame.pack(side="top", fill="x")
 #===========level 2 frame=========
-topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_2)
-topTopFrame.pack(side="top", padx=5, pady=5)
-bottomTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_2)
-# bottomTopFrame.pack(side="top", padx=5, pady=5)
+topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+topTopFrame.pack(side="top", padx=5, pady=5, fill="x")
+bottomTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+bottomTopFrame.pack(after=topTopFrame, side="top", padx=5, pady=5, fill="x")
 
-topLeftFrame= customtkinter.CTkFrame(bottomTopFrame, width=300,  border_width=1, border_color="#aaff00", fg_color=BG_LVL_3)
+topLeftFrame= customtkinter.CTkFrame(bottomTopFrame, width=300,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
 topLeftFrame.pack(side="left", padx=5, pady=5)
-topRightFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=1, border_color="#aaff00", fg_color=BG_LVL_3)
+topRightFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
 topRightFrame.pack(side="left", padx=5, pady=5)
-topNextFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=1, border_color="#aaff00", fg_color=BG_LVL_3)
-topNextFrame.pack(side="left", padx=5, pady=5)
+topNextFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+topNextFrame.pack(side="left", padx=5, pady=5, fill="both", expand=True)
 
 
 
-subTopLeftFrame1= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_4)
-subTopLeftFrame1.pack(side="top", padx=5, pady=5)
-subTopLeftFrame2= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_4)
-subTopLeftFrame2.pack(side="bottom", padx=5, pady=5)
-subTopLeftFrame3= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_4)
-subTopLeftFrame3.pack(side="bottom", padx=5, pady=5)
-subTopRightFrame1= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_4)
-subTopRightFrame1.pack(side="top", padx=5, pady=5)
-subTopRightFrame2= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_4)
-subTopRightFrame2.pack(side="bottom", padx=5, pady=5)
-subTopRightFrame3= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_4)
-subTopRightFrame3.pack(side="bottom", padx=5, pady=5)
+subTopLeftFrame1= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopLeftFrame1.pack(side="top", padx=5, pady=5,expand=True,fill="x")
+subTopLeftFrame2= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopLeftFrame2.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
+subTopLeftFrame3= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopLeftFrame3.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
+subTopRightFrame1= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopRightFrame1.pack(side="top", padx=5, pady=5,expand=True,fill="x")
+subTopRightFrame2= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopRightFrame2.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
+subTopRightFrame3= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopRightFrame3.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
 
-
-hystory_listbox=CTkListbox(middleFrame, height=200, border_width=2,border_color="#01595a",bg_color=YELLOW, fg_color=YELLOW)
-hystory_listbox.pack(pady=5, padx=3, expand=True, side="top", fill="x")
+historyFrame=customtkinter.CTkFrame(middleFrame, height=200, border_width=2,border_color=BLACK, fg_color=RED) 
+historyFrame.pack(pady=5, padx=3, expand=True, side="top", fill="x")
+hystory_listbox=CTkListbox(historyFrame, height=200, border_width=0,border_color="#01595a",bg_color=CYAN, fg_color=CYAN, text_color=NAVY)
+hystory_listbox.pack(expand=True, side="top", fill="x")
 hystory_listbox.insert(0, "Hystory here..")
-inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color=BG_LVL_1)
+inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
 inputFrame.pack( fill="x", side="top", padx=5, pady=5)
 
-status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor="#ffaa54")
-# status_label=customtkinter.CTkLabel(statusFrame, wraplength=100, text="Status", fg_color="transparent", justify="right", text_color="#ffaa54")
+status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor=NAVY)
+# status_label=customtkinter.CTkLabel(statusFrame, wraplength=100, text="Status", fg_color="transparent", justify="right", text_color=NAVY)
 # status_label.configure(wraplength=300)
 status_label.pack(side="left", padx=1,expand=True, fill="x")
 
-command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=1, border_color="#aaff00", fg_color="#aa8800")
+command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=0, border_color="#aaff00", fg_color=CYAN)
 command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
 
 crlf_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["CRLF","LF", "CR"], width=100, border_width=2,border_color="#01595a")
 crlf_dropdown.pack(pady=5, padx=3,side="left")
-chr_del_label=mylabel(inputFrame, txt="chr del", bg="transparent", justify="right", tcolor="#ffaa54")
+chr_del_label=mylabel(inputFrame, txt="chr del", bg="transparent", justify="right", tcolor=GREEN)
 chr_del_label.pack(side="left", padx=10)
 chr_del_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["off","1 MS", "2MS"], width=100, border_width=2,border_color="#01595a")
 chr_del_dropdown.pack(pady=5, padx=3,side="left") 
@@ -484,19 +494,19 @@ datamode_dropdown.pack(pady=5, padx=3,side="left")
 # resultFrame = tk.Frame(topFrame, padx=20, pady=4, bg="#2266ff")
 #===========#monitor
 
-texbox_monitor=mytextbox(monitorframe, height=80, width=500, bordercolor="#ffff00", fg=YELLOW, bg="transparent" )
+texbox_monitor=mytextbox(monitorframe, height=200, width=500, bordercolor="#ffff00", fg=YELLOW, bg="transparent" )
 texbox_monitor.pack(padx=2, fill="x",pady=3)
 
-resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
+resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=0, border_color="#aaff00", fg_color="#00b8cc")
 resultControlFrame.pack(fill="x",side="top")
 
-resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#049589")
+resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#049589")
 # resultFrame.pack(fill="x",side="bottom") 
 
-filterFrame = customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#00a6a0")
+filterFrame = customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#00a6a0")
 #filterFrame.pack(fill="x",side="top") 
 
-postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=1, border_color="#aaff00", fg_color="#00b8cc")
+postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=0, border_color="#aaff00", fg_color="#00b8cc")
 #postreadFrame.pack(fill="x",side="right") 
 clear_button2= mybutton(resultControlFrame,text="clear",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=cleartb)
 clear_button2.pack(pady=5, padx=3,side="left")
@@ -506,7 +516,7 @@ logging_to_file_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Log to f
 logging_to_file_cb.pack(pady=5, padx=3,side="left")
 logpath_button= mybutton(resultControlFrame,text="log path",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 logpath_button.pack(pady=5, padx=3,side="left")
-logPath_textbox= customtkinter.CTkTextbox(resultControlFrame, height=1, width=100, border_width=1, border_color="#aaff00", fg_color="#00b8cc")
+logPath_textbox= customtkinter.CTkTextbox(resultControlFrame, height=1, width=100, border_width=0, border_color="#aaff00", fg_color="#00b8cc")
 logPath_textbox.pack(pady=5, padx=3,side="left")
 
 
@@ -515,7 +525,7 @@ logPath_textbox.pack(pady=5, padx=3,side="left")
 text_box= mytextbox(resultFrame, height=300, width=500, bordercolor="#ffff00", fg="transparent", bg="transparent" )
 text_box.pack(padx=1, pady=1 , fill="x")
 
-buttonFrame = customtkinter.CTkFrame(resultFrame,width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#b85f07")
+buttonFrame = customtkinter.CTkFrame(resultFrame,width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#b85f07")
 # buttonFrame.pack(fill="x", side="bottom") 
 
 # Button to clear text area
@@ -532,7 +542,7 @@ clr_btn.pack(side="left",pady=2, padx=5)
 # Text box to display data
 
 # flbel=tk.Label(filterFrame,text="result filter")
-flbel=mylabel(filterFrame, txt="result filter", bg="transparent", justify="right", tcolor="#ffaa54")
+flbel=mylabel(filterFrame, txt="result filter", bg="transparent", justify="right", tcolor=NAVY)
 flbel.pack(side="left", padx=10)
 # Text box to display data
 # text_filter = tk.Text(filterFrame, height=1, width=30 )
@@ -543,7 +553,7 @@ text_filter.insert(tk.END,"FD")
 
 
 # fldfn=tk.Label(postreadFrame,text="pre string", bg="#222222", fg="#ffffff")
-fldfn=mylabel(postreadFrame, txt="pre string", bg="transparent", justify="right", tcolor="#ffaa54")
+fldfn=mylabel(postreadFrame, txt="pre string", bg="transparent", justify="right", tcolor=NAVY)
 fldfn.pack(side="left",padx=3)
 
 # Text box to display data
@@ -554,7 +564,7 @@ text_pre_str.insert(tk.END,"KEY_ = \"")
 # Text box to display data
 
 # fldfn=tk.Label(postreadFrame,text="post string", bg="#222222", fg="#ffffff")
-fldfnn=mylabel(postreadFrame, txt="post string", bg="transparent", justify="right", tcolor="#ffaa54")
+fldfnn=mylabel(postreadFrame, txt="post string", bg="transparent", justify="right", tcolor=NAVY)
 fldfnn.pack(side="left", padx=4)
 
 # text_post_str = tk.Text(postreadFrame, height=1, width=20)
@@ -576,59 +586,59 @@ start_button.pack(pady=10)
 open_button= mybutton(topTopFrame,text="open",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 open_button.pack(pady=10, padx=5, side="left")
 
-label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="right", tcolor="#ffaa54")
+label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="right", tcolor=YELLOW)
 label_device.pack(side="left", padx=10)
 device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a", command=on_port_select)
 device_dropdown.pack(pady=5, padx=3,side="left")
-cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=BLUE, border_width=2, border_color="#01595a", text_color=GREEN)
 cb_rts.pack(pady=5, padx=3,side="left")
-cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=BLUE, border_width=2, border_color="#01595a", text_color=GREEN)
 cb_dtr.pack(pady=5, padx=3,side="left")
-cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color=BLUE, border_width=2, border_color="#01595a", text_color=GREEN)
 cb_ar.pack(pady=5, padx=3,side="left")
 
 
 sh_setting_button= mybutton(topTopFrame,text="show setting",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=show_setting)
 sh_setting_button.pack(pady=10, padx=5, side="left")
 
-label_baud=mylabel(subTopLeftFrame1, txt="Baudrate", bg="transparent", justify="right", tcolor="#ffaa54")
+label_baud=mylabel(subTopLeftFrame1, txt="Baudrate", bg="transparent", justify="right", tcolor=NAVY)
 label_baud.pack(side="left", padx=10)
 baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly", values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"], width=100, border_width=2,border_color="#01595a", command=on_baudrate_select)
-baudrate_dropdown.pack(pady=5, padx=3,side="left")
-label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor="#ffaa54")
+baudrate_dropdown.pack(pady=5, padx=3,side="right")
+label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor=NAVY)
 label_flow.pack(side="left", padx=10)
 flowrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame2, state="readonly", values=["none","Hardware", "Software"], width=100, border_width=2,border_color="#01595a", command=on_flowrate_select)
-flowrate_dropdown.pack(pady=5, padx=3,side="left")
-label_openmode=mylabel(subTopLeftFrame3, txt="Open Mode", bg="transparent", justify="right", tcolor="#ffaa54")
+flowrate_dropdown.pack(pady=5, padx=3,side="right")
+label_openmode=mylabel(subTopLeftFrame3, txt="Open Mode", bg="transparent", justify="right", tcolor=NAVY)
 label_openmode.pack(side="left", padx=10)
 openmode_dropdown= customtkinter.CTkComboBox(subTopLeftFrame3, state="readonly", values=["Read Only","Write Only","Read/Write"], width=100, border_width=2,border_color="#01595a")
-openmode_dropdown.pack(pady=5, padx=3,side="left")
-label_databit=mylabel(subTopRightFrame1, txt="Data Bit", bg="transparent", justify="right", tcolor="#ffaa54")
+openmode_dropdown.pack(pady=5, padx=3,side="right")
+label_databit=mylabel(subTopRightFrame1, txt="Data Bit", bg="transparent", justify="right", tcolor=NAVY)
 label_databit.pack(side="left", padx=10)
 databit_dropdown= customtkinter.CTkComboBox(subTopRightFrame1, state="readonly", values=["5","6", "7", "8"], width=100, border_width=2,border_color="#01595a")
-databit_dropdown.pack(pady=5, padx=3,side="left")
-label_parity=mylabel(subTopRightFrame2, txt="Parity", bg="transparent", justify="right", tcolor="#ffaa54")
+databit_dropdown.pack(pady=5, padx=3,side="right")
+label_parity=mylabel(subTopRightFrame2, txt="Parity", bg="transparent", justify="right", tcolor=NAVY)
 label_parity.pack(side="left", padx=10)
 parity_dropdown= customtkinter.CTkComboBox(subTopRightFrame2, state="readonly", values=["none","Even", "Odd", "Space", "Mark"], width=100, border_width=2,border_color="#01595a",command=on_parity_select)
-parity_dropdown.pack(pady=5, padx=3,side="left")
-label_stopbit=mylabel(subTopRightFrame3, txt="Stop Bit", bg="transparent", justify="right", tcolor="#ffaa54")
+parity_dropdown.pack(pady=5, padx=3,side="right")
+label_stopbit=mylabel(subTopRightFrame3, txt="Stop Bit", bg="transparent", justify="right", tcolor=NAVY)
 label_stopbit.pack(side="left", padx=10)
 stopbit_dropdown= customtkinter.CTkComboBox(subTopRightFrame3, state="readonly", values=["1","2"], width=100, border_width=2,border_color="#01595a")
-stopbit_dropdown.pack(pady=5, padx=3,side="left")
+stopbit_dropdown.pack(pady=5, padx=3,side="right")
 
 cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Control Character", fg_color="#01595a", border_width=2, border_color="#01595a")
-cb_ctrl_char.pack(pady=5, padx=3,side="top")
+cb_ctrl_char.pack(pady=5, padx=3,side="top",anchor="w")
 cb_show_timestamp= customtkinter.CTkCheckBox(topNextFrame, text="Show Timestamp", fg_color="#01595a", border_width=2, border_color="#01595a")
-cb_show_timestamp.pack(pady=5, padx=3,side="top")
-setlogFrame= customtkinter.CTkFrame(topNextFrame, width=300, height=100, border_width=1, border_color="#aaff00", fg_color="#00b8cc")
-setlogFrame.pack(fill="x",side="top", padx=5, pady=5)
-savelog_label=mylabel(setlogFrame, txt="Save Log", bg="transparent", justify="right", tcolor="#ffaa54")
+cb_show_timestamp.pack(pady=5, padx=3,side="top",anchor="w")
+setlogFrame= customtkinter.CTkFrame(topNextFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#00b8cc")
+setlogFrame.pack(fill="x",expand=True, side="bottom", padx=5, pady=5)
+savelog_label=mylabel(setlogFrame, txt="Save Log", bg="transparent", justify="right", tcolor=NAVY)
 savelog_label.pack(side="left", padx=10)
 logPath_textbox2= customtkinter.CTkTextbox(setlogFrame, height=1, width=100, border_width=1, border_color="#aaff00", fg_color="#00b8cc")
-logPath_textbox2.pack(pady=5, padx=3,side="left")
+logPath_textbox2.pack(pady=5, padx=3,side="left", fill='x', expand=True)
 cb_appendlog= customtkinter.CTkCheckBox(setlogFrame, text="Append Log", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_appendlog.pack(pady=5, padx=3,side="left")
-# label_baud=mylabel(topTopFrame, txt="Baudrate", bg="transparent", justify="right", tcolor="#ffaa54")
+# label_baud=mylabel(topTopFrame, txt="Baudrate", bg="transparent", justify="right", tcolor=NAVY)
 
 
 # sport=''
@@ -757,20 +767,25 @@ def getStopBit(stopbit):
 
 def setupserial():
 	global ser
-	ser=serial.Serial(
-		port=device_dropdown.get(),
-		baudrate=int(baudrate_dropdown.get()),
-		parity=getParity(parity_dropdown.get()),
-		
-		stopbits=getStopBit(stopbit_dropdown.get()),
-		bytesize=int(databit_dropdown.get()),
-		timeout=1
-	)
-	sser=str(ser)
-	sser= sser.replace(",", ", ")
-	wl=root.winfo_width()
-	status_label.configure(wraplength=wl)
-	status_label.configure(text=f"Serial Port: {sser} ")
+	try:
+		ser=serial.Serial(
+			port=device_dropdown.get(),
+			baudrate=int(baudrate_dropdown.get()),
+			parity=getParity(parity_dropdown.get()),
+			
+			stopbits=getStopBit(stopbit_dropdown.get()),
+			bytesize=int(databit_dropdown.get()),
+			timeout=0
+		)
+		sser=str(ser)
+		sser= sser.replace(",", ", ")
+		wl=root.winfo_width()
+		status_label.configure(wraplength=wl)
+		status_label.configure(text=f"Serial Port: {sser} ")
+		start_reading()
+	except serial.SerialException:
+		print(f"Error: {ser.port} is not available")
+		applog(f"Error: {ser.port}\n")
 
 	
 def load_config():
@@ -831,16 +846,6 @@ def save_config():
 save_config()
 setupserial()
 
-if ser.isOpen():
-	open_button.configure(text="close", command=close_serial)
-	sh_setting_button.pack_forget()
-else:
-	open_button.configure(text="open", command=setupserial)
-
-	ser.close()
-	# text_box.insert(tk.END, f"Serial Port: {ser} is closed\n")
-	applog( f"Serial Port: {ser} is closed\n")
-
 # baudrate_dropdown.bind("<<ComboboxSelected>>", on_baudrate_select)
 command_entry.bind("<Return>", send_command)
 command_entry.bind("<Up>", traceBackCommand)
@@ -862,8 +867,18 @@ def center_window(window):
     x = (screen_width - width) // 2
     y = (screen_height - height) // 2
 	# y = (screen_height - (height / 2)) // 2
-    window.geometry(f"{width}x{height}+{x}+{y}")
+	
+    window.geometry(f"{width}x{height+200}+{x}+{y}")
 center_window(root)
+
+if ser.isOpen():
+	open_button.configure(text="close", command=close_serial)
+	sh_setting_button.pack_forget()
+else:
+	open_button.configure(text="open", command=setupserial)
+	ser.close()
+	# text_box.insert(tk.END, f"Serial Port: {ser} is closed\n")
+	applog( f"Serial Port: {ser} is closed\n")
 
 def on_closing():
 	if ser.isOpen():

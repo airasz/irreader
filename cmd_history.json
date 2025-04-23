@@ -20,5 +20,9 @@
     "resetscreen",
     "resetscreen",
     "ada",
-    "setnote"
+    "setnote",
+    "rotation=2",
+    "ada",
+    "setnote",
+    "hello\r\n"
 ]
