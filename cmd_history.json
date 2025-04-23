@@ -29,5 +29,16 @@
     "#setnote=NOTE_A7",
     "#setnote=NOTE_A7",
     "#setnote=NOTE_A7",
-    "#resetscreen\r\n"
+    "#resetscreen",
+    "#setnote=NOTE_A7",
+    "#setnote=NOTE_A7",
+    "#resetscreen",
+    "#rotation=2",
+    "#rotation=2",
+    "#resetscreen",
+    "#rotation=2",
+    "#setnote=NOTE_A7",
+    "2 - 2",
+    "#rotation=2",
+    "#rotation=2"
 ]

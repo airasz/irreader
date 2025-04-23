@@ -154,11 +154,30 @@ def draw_history():
 	# hystory_listbox.see(tk.END)  # Scroll to the end
 	hystory_listbox.see(POINTER_HISTORY)
 
+def update_history(cmd):
+	global MAX_HISTORY
+	print(f"update history: {cmd} {hystory_listbox.size()} {MAX_HISTORY}")
+	if hystory_listbox.size() > MAX_HISTORY:
+		hystory_listbox.delete(0)
+	hystory_listbox.insert(hystory_listbox.size(), cmd)
+	hystory_listbox.see(tk.END)  # Scroll to the end
+		
 def send_command(event):
 	global ser
 	global POINTER_HISTORY
 	global CMD_HISTORY
 	command = command_entry.get()
+	
+	if len(CMD_HISTORY) == MAX_HISTORY:
+		CMD_HISTORY.pop(0)
+	# hystory_listbox.insert(tk.END, command)
+	CMD_HISTORY.append(command)
+	POINTER_HISTORY=hystory_listbox.size()
+	print(f'POINTER_HISTORY: {POINTER_HISTORY}')
+	command_entry.delete(0, tk.END)
+	save_history()
+	# draw_history()
+	update_history(command)
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
 		command += "\r\n"
@@ -169,21 +188,12 @@ def send_command(event):
 	else:
 		pass
 
-	if len(CMD_HISTORY) == MAX_HISTORY:
-		CMD_HISTORY.pop(0)
-	# hystory_listbox.insert(tk.END, command)
-	CMD_HISTORY.append(command)
-	POINTER_HISTORY=hystory_listbox.size()
-	print(f'POINTER_HISTORY: {POINTER_HISTORY}')
-	command_entry.delete(0, tk.END)
-	save_history()
-	draw_history()
 	if ser.isOpen():
 		write_serial(command)
 		applog(f"Command sent: {command}\n")
 	else:
-		command_entry.delete(0, tk.END)
-		hystory_listbox.see(tk.END)  # Scroll to the end
+		# command_entry.delete(0, tk.END)
+		# hystory_listbox.see(tk.END)  # Scroll to the end
 		applog("Serial port is not open.\n")
 def traceBackCommand(event):
 	global ser
@@ -344,7 +354,7 @@ def on_baudrate_select(event):
 def show_setting():
 	global ser
 	print("show setting")
-	if ser.isOpen() == True:
+	if ser.isOpen() == False:
 		if sh_setting_button.cget("text") == "show setting":
 			print("show setting")
 			sh_setting_button.configure(text="hide setting")
@@ -441,7 +451,7 @@ statusFrame.pack(side="top", fill="x")
 topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
 topTopFrame.pack(side="top", padx=5, pady=5, fill="x")
 bottomTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
-bottomTopFrame.pack(after=topTopFrame, side="top", padx=5, pady=5, fill="x")
+# bottomTopFrame.pack(after=topTopFrame, side="top", padx=5, pady=5, fill="x")
 
 topLeftFrame= customtkinter.CTkFrame(bottomTopFrame, width=300,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
 topLeftFrame.pack(side="left", padx=5, pady=5)
@@ -478,7 +488,7 @@ status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left"
 # status_label.configure(wraplength=300)
 status_label.pack(side="left", padx=1,expand=True, fill="x")
 
-command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=0, border_color="#aaff00", fg_color=CYAN)
+command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=0, border_color="#aaff00", fg_color=CYAN, text_color=BROWN)
 command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
 
 crlf_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["CRLF","LF", "CR"], width=100, border_width=2,border_color="#01595a")
@@ -496,6 +506,7 @@ datamode_dropdown.pack(pady=5, padx=3,side="left")
 #===========#monitor
 
 texbox_monitor=mytextbox(monitorframe, height=200, width=500, bordercolor="#ffff00", fg=YELLOW, bg="transparent" )
+texbox_monitor.configure(text_color=BLACK)
 texbox_monitor.pack(padx=2, fill="x",pady=3)
 
 resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=0, border_color="#aaff00", fg_color="#00b8cc")
@@ -799,7 +810,7 @@ def load_config():
 			openmode_dropdown.set(config['openmode'])
 			databit_dropdown.set(config['databit'])
 			parity_dropdown.set(config['parity'])
-			print(f'parity > {config['parity']}')
+			# print(f'parity > {config['parity']}')
 			stopbit_dropdown.set(config['stopbit'])
 			crlf_dropdown.set(config['crlf'])
 			chr_del_dropdown.set(config['chr_del'])
@@ -871,7 +882,7 @@ def center_window(window):
 	# y = (screen_height - (height / 2)) // 2
 	
     window.geometry(f"{width}x{height+200}+{x}+{y}")
-center_window(root)
+# center_window(root)
 
 if ser.isOpen():
 	open_button.configure(text="close", command=close_serial)
