@@ -5,7 +5,7 @@
     "databit": "8",
     "parity": "none",
     "stopbit": "1",
-    "crlf": "CRLF",
+    "crlf": "CR",
     "chr_del": "0",
     "datamode": "ASCII"
 }

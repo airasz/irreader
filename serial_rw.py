@@ -13,6 +13,9 @@ import os
 import serial.tools.list_ports
 import json
 
+# import ctkmenu
+
+
 BACKGROUND = "#d9d9d9"
 FOREGROUND = "black"
 BUTTON_BACKGROUND = "#08b19a"
@@ -50,6 +53,11 @@ POINTER_HISTORY = 0
 CMD_HISTORY = []
 MAX_HISTORY = 50
 
+root = customtkinter.CTk()
+root.title("Serialone v 1")
+
+# floating_window = ctkmenu.CTkFloatingWindow(root, corner_radius=15, border_width=1)
+# floating_window=ctkmenu.CTkFloatingWindow(root)
 # creates correctly formatted buttons
 def formatted_buttons(
 frame,
@@ -85,6 +93,42 @@ activeforeground=FOREGROUND,):
 	fg_color=BUTTON_BACKGROUND, command=command, corner_radius=50)
 	return btn
 
+
+#contex menu
+def popup_menu2(event,frame):
+	try:
+		frame.popup(event.x_root, event.y_root)
+	finally:
+		frame.grab_release()
+
+def popup_menu(event):
+	try:
+		menu.post(event.x_root, event.y_root)
+	except Exception as e:
+		print(f"Error: {e}")
+
+def remove_selected():
+		print("remove selected")
+		selected = hystory_listbox.curselection()
+		if selected:
+			hystory_listbox.delete(selected)
+
+def clear_history():
+		print("clear history")
+		hystory_listbox.delete(0, tk.END)
+		CMD_HISTORY.clear()
+		POINTER_HISTORY=0
+		applog("History cleared\n")
+
+menu = tk.Menu(root, tearoff=0)
+# menu = customtkinter.CTkMenu(root, tearoff=0)
+menu.add_command(label="remove selected", command=remove_selected)
+menu.add_command(label="Clear history", command=clear_history)
+menu.add_separator()
+menu.add_command(label="Exit", command=root.quit)
+# menu.post(event.x_root, event.y_root)
+
+
 def mytextbox(frame , height, width, bordercolor, bg, fg):
 	ctb=customtkinter.CTkTextbox(frame, height=height, width=width, border_color=bordercolor, bg_color=bg, fg_color=fg, corner_radius=12, border_width=0)
 	return ctb
@@ -99,8 +143,8 @@ def list_com_ports():
 	return available_ports
 
 ser = serial.Serial(None, baudrate=9600, timeout=1) 
-# if ser.isOpen():
-# 	ser.close()
+if ser.isOpen():
+	ser.close()
 count=0
 
 
@@ -114,7 +158,7 @@ count=0
 #     return f"{width}x{height}+{x}+{y}"
 
 
-
+	# hystory_listbox.bind("<Button-3>", popup_menu)
 # Function to read serial data
 def read_serial():
 	global count
@@ -156,10 +200,11 @@ def draw_history():
 
 def update_history(cmd):
 	global MAX_HISTORY
+	global hystory_listbox
 	print(f"update history: {cmd} {hystory_listbox.size()} {MAX_HISTORY}")
 	if hystory_listbox.size() > MAX_HISTORY:
 		hystory_listbox.delete(0)
-	hystory_listbox.insert(hystory_listbox.size(), cmd)
+	hystory_listbox.insert(tk.END, cmd)
 	hystory_listbox.see(tk.END)  # Scroll to the end
 		
 def send_command(event):
@@ -211,15 +256,6 @@ def traceBackCommand(event):
 				break
 		hystory_listbox.see(tmpPH)
 	# POINTER_HISTORY=POINTER_HISTORY - 1
-	crlf = crlf_dropdown.get()
-	if crlf == "CRLF":
-		command += "\r\n"
-	elif crlf == "LF":
-		command += "\n"
-	elif crlf == "CR":
-		command += "\r"
-	else:
-		pass
 	if ser.isOpen():
 		# write_serial(command)
 		# applog(f"Command sent: {command}\n")
@@ -238,15 +274,6 @@ def traceForwardCommand(event):
 		hystory_listbox.see(POINTER_HISTORY)
 	hystory_listbox.see(POINTER_HISTORY+1)
 	# POINTER_HISTORY=POINTER_HISTORY + 1
-	crlf = crlf_dropdown.get()
-	if crlf == "CRLF":
-		command += "\r\n"
-	elif crlf == "LF":
-		command += "\n"
-	elif crlf == "CR":
-		command += "\r"
-	else:
-		pass
 	if ser.isOpen():
 		# write_serial(command)
 		# applog(f"Command sent: {command}\n")
@@ -267,6 +294,7 @@ def on_hystory_select(event):
 	applog(f"Selected item: {selected_item}\n")
 	command_entry.delete(0, tk.END)
 	command_entry.insert(0, selected_item)
+	command_entry.focus()
 	# hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
 	# hystory_listbox.bind("<Double-Button-1>", traceBackCommand)
 	# hystory_listbox.bind("<Button-3>", traceForwardCommand)
@@ -311,6 +339,9 @@ def applog(msg):
 def start_reading():
 	print("start reading")
 	open_button.configure(text="close", command=close_serial)
+	sh_setting_button.configure(text="show setting")
+	sh_setting_button.pack_forget()
+	bottomTopFrame.pack_forget()
 	thread = threading.Thread(target=read_serial, daemon=True)
 	thread.start()
 
@@ -419,7 +450,7 @@ def on_port_select(event):
 		if ser and ser.isOpen():			
 			text_box.insert(tk.END, f"Serial Port: {ser} is open, try to close\n")
 			ser.close()
-		ser = serial.Serial(selected_port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+		# ser = serial.Serial(selected_port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 
 		# pass
 	else:
@@ -434,8 +465,6 @@ def on_mouse_wheel_listbox(event):
 	else:
 		hystory_listbox.yview_scroll(1, "units")
 
-root = customtkinter.CTk()
-root.title("Serialone v 1")
 
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 #====level 1 frame=========
@@ -483,7 +512,7 @@ hystory_listbox.insert(0, "Hystory here..")
 inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
 inputFrame.pack( fill="x", side="top", padx=5, pady=5)
 
-status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor=NAVY)
+status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor=YELLOW)
 # status_label=customtkinter.CTkLabel(statusFrame, wraplength=100, text="Status", fg_color="transparent", justify="right", text_color=NAVY)
 # status_label.configure(wraplength=300)
 status_label.pack(side="left", padx=1,expand=True, fill="x")
@@ -602,11 +631,11 @@ label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="
 label_device.pack(side="left", padx=10)
 device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a", command=on_port_select)
 device_dropdown.pack(pady=5, padx=3,side="left")
-cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=BLUE, border_width=2, border_color="#01595a", text_color=GREEN)
+cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
 cb_rts.pack(pady=5, padx=3,side="left")
-cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=BLUE, border_width=2, border_color="#01595a", text_color=GREEN)
+cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
 cb_dtr.pack(pady=5, padx=3,side="left")
-cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color=BLUE, border_width=2, border_color="#01595a", text_color=GREEN)
+cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
 cb_ar.pack(pady=5, padx=3,side="left")
 
 
@@ -652,6 +681,11 @@ cb_appendlog= customtkinter.CTkCheckBox(setlogFrame, text="Append Log", fg_color
 cb_appendlog.pack(pady=5, padx=3,side="left")
 # label_baud=mylabel(topTopFrame, txt="Baudrate", bg="transparent", justify="right", tcolor=NAVY)
 
+
+# menu1_button = customtkinter.CTkButton(floating_window.frame, text="remove selected", fg_color="transparent", text_color=NAVY, command=lambda: remove_selected)
+# menu1_button.pack(pady=5, padx=3,fill="x", expand=True)
+# menu2_button = customtkinter.CTkButton(floating_window.frame, text="remove all", fg_color="transparent", text_color=NAVY, command=lambda: clear_history)
+# menu2_button.pack(pady=5, padx=3,fill="x", expand=True)
 
 # sport=''
 # def cekport():
@@ -738,7 +772,7 @@ else:
 		device_dropdown.configure(values=accepted_port)
 		if accepted_port:
 			device_dropdown.set(accepted_port[0])	
-			ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+			# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 			
 		device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 
@@ -867,6 +901,10 @@ hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
 hystory_listbox.bind("<Double-Button-1>", on_hystory_double_click)
 # hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
 hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
+hystory_listbox.bind("<Button-3>", popup_menu)
+# hystory_listbox.bind("<Button-3>", popup_menu2(event, floating_window))
+# hystory_listbox.bind("<Button-3>", lambda event: popup_menu2(event, floating_window))
+# hystory_listbox.bind("<Button-3>", lambda event: popup_menu(event, floating_window))
 # flowrate_dropdown.bind("<<ComboboxSelected>>", on_flowrate_select)
 # device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 print("Serial Reader is running...")
