@@ -48,6 +48,7 @@ BG_LVL_4 = CYAN
 
 POINTER_HISTORY = 0
 CMD_HISTORY = []
+MAX_HISTORY = 50
 
 # creates correctly formatted buttons
 def formatted_buttons(
@@ -170,7 +171,9 @@ def send_command(event):
 	if ser.isOpen():
 		write_serial(command)
 		applog(f"Command sent: {command}\n")
-		hystory_listbox.insert(tk.END, command)
+		if len(CMD_HISTORY) == MAX_HISTORY:
+			CMD_HISTORY.pop(0)
+		# hystory_listbox.insert(tk.END, command)
 		CMD_HISTORY.append(command)
 		POINTER_HISTORY=hystory_listbox.size()
 		print(f'POINTER_HISTORY: {POINTER_HISTORY}')
@@ -188,6 +191,14 @@ def traceBackCommand(event):
 	# command = hystory_listbox.get(hystory_listbox.curselection(POINTER_HISTORY))
 	POINTER_HISTORY=POINTER_HISTORY - 1
 	command = hystory_listbox.get(POINTER_HISTORY)
+	if POINTER_HISTORY > 1 and POINTER_HISTORY < hystory_listbox.size():
+		tmpPH=POINTER_HISTORY-1
+		for i in range(5,0,-1):
+			if (POINTER_HISTORY-i)>=0:
+				tmpPH=POINTER_HISTORY-i
+				# hystory_listbox.see(tmpPH)
+				break
+		hystory_listbox.see(tmpPH)
 	# POINTER_HISTORY=POINTER_HISTORY - 1
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
@@ -212,6 +223,9 @@ def traceForwardCommand(event):
 	global POINTER_HISTORY
 	POINTER_HISTORY=POINTER_HISTORY + 1
 	command = hystory_listbox.get(POINTER_HISTORY)
+	if POINTER_HISTORY > 1 and POINTER_HISTORY < hystory_listbox.size():
+		hystory_listbox.see(POINTER_HISTORY)
+	hystory_listbox.see(POINTER_HISTORY+1)
 	# POINTER_HISTORY=POINTER_HISTORY + 1
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
@@ -789,6 +803,7 @@ def load_history():
 				hystory_listbox.insert(tk.END, cmd)
 				CMD_HISTORY.append(cmd)
 			POINTER_HISTORY = len(CMD_HISTORY) 
+			hystory_listbox.see(POINTER_HISTORY)
 	except FileNotFoundError:
 		print("History file not found, using empty history.")
 load_history()
