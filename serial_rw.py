@@ -15,6 +15,7 @@ import json
 
 # import ctkmenu
 
+com_ports = []
 
 BACKGROUND = "#d9d9d9"
 FOREGROUND = "black"
@@ -667,6 +668,16 @@ label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="
 label_device.pack(side="left", padx=10)
 device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a", command=on_port_select)
 device_dropdown.pack(pady=5, padx=3,side="left")
+device_option= customtkinter.CTkOptionMenu(topTopFrame, values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, corner_radius=8, command=on_port_select)
+
+
+# The OptionMenu is a button with a menu attached. The menu typically grows in height until it reaches the edge of the screen. The choices are fixed, and the user can't type in their own value.
+
+# A Combobox is in effect an Entry widget with a dropdown listbox. The user has the ability (if properly configured) to type into the combobox or pick from the dropdown list. The dropdown list is typically constrained to a handful of rows, with a scrollbar when the list gets to long to fit.
+
+# The Combobox is also a bit easier to add and remove items after the widget has been created. The OptionMenu was designed to have a static number of items that are set when the widget is created.
+
+device_option.pack(pady=5, padx=3,side="left")
 cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
 cb_rts.pack(pady=5, padx=3,side="left")
 cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
@@ -745,82 +756,81 @@ cb_appendlog.pack(pady=5, padx=3,side="left")
 #     bytesize=serial.EIGHTBITS,
 # )
 
+def list_ser_ports():
+	if os.name== 'nt':
+		print("we in windows")
+		# text_box.insert(tk.END, "we in windows\n")    
+		applog( "we in windows\n")
+		com_ports = list_com_ports()
+		accepted_port=[]
+		portn=0
+		if com_ports:
+			# print("Available COM ports:")
+			# port_dropdown['values'] = com_ports	
+			device_dropdown.configure(values=com_ports)
+			# accepted_port.append(port)
+			# text_box.insert(tk.END, "Available COM ports:\n")
+			applog( "Available COM ports:\n")
+			for port in com_ports:
+				portn+=1
+				print(port)
+				# text_box.insert(tk.END, f"port: {port}\n")
+				# text_box.insert(tk.END, f"total port: {portn}\n")
+				applog(f"port: {port}\n")
+				applog(f"total port: {portn}\n")
+				if port !="COM1":
+					accepted_port.append(port)
+					ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+					root.title("Serialone on " + port)
+			print(f'total port: {portn}')
+			if portn ==1:
+				device_dropdown.set(com_ports[0])
+			else:
+				device_dropdown.set(com_ports[1]) 
 
-
-if os.name== 'nt':
-	print("we in windows")
-	# text_box.insert(tk.END, "we in windows\n")    
-	applog( "we in windows\n")
-	com_ports = list_com_ports()
-	accepted_port=[]
-	portn=0
-	if com_ports:
-		# print("Available COM ports:")
-		# port_dropdown['values'] = com_ports	
-		device_dropdown.configure(values=com_ports)
-		# accepted_port.append(port)
-		# text_box.insert(tk.END, "Available COM ports:\n")
-		applog( "Available COM ports:\n")
-		for port in com_ports:
-			portn+=1
-			print(port)
-			# text_box.insert(tk.END, f"port: {port}\n")
-			# text_box.insert(tk.END, f"total port: {portn}\n")
-			applog(f"port: {port}\n")
-			applog(f"total port: {portn}\n")
-			if port !="COM1":
-				accepted_port.append(port)
-				ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
-				root.title("Serialone on " + port)
-		print(f'total port: {portn}')
-		if portn ==1:
-			device_dropdown.set(com_ports[0])
-		else:
-			device_dropdown.set(com_ports[1]) 
-
-		
-		device_dropdown.configure(values=accepted_port)
-		if accepted_port:
-			device_dropdown.set(accepted_port[0])	
-			# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 			
-		device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
-			# item
-		applog("No COM ports found.\n")
-else:
-	applog( "we in linux\n")
-	com_ports = list_com_ports()
-	accepted_port=[]
-	if com_ports:
-		# port_dropdown['values'] = com_ports	
-		# port_dropdown.configure(values=com_ports)
-		for port in com_ports:
-			# scom_ports=str(com_ports)
-			if "/dev/ttyACM" in port or  "/dev/ttyUSB" in port:
-				device_dropdown['values'] = port	
-				accepted_port.append(port)
-				# port_dropdown.configure(values=com_ports)item
-				# port_dropdown.set(port) 
-				applog(port+"\n")		
-				# ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
-				root.title("Serialone on " + port)
-		
-		device_dropdown.configure(values=accepted_port)
-		if accepted_port:
-			device_dropdown.set(accepted_port[0])	
-			# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+			device_dropdown.configure(values=accepted_port)
+			if accepted_port:
+				device_dropdown.set(accepted_port[0])	
+				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+				
+			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+				# item
+			applog("No COM ports found.\n")
+	else:
+		applog( "we in linux\n")
+		com_ports = list_com_ports()
+		accepted_port=[]
+		if com_ports:
+			# port_dropdown['values'] = com_ports	
+			# port_dropdown.configure(values=com_ports)
+			for port in com_ports:
+				# scom_ports=str(com_ports)
+				if "/dev/ttyACM" in port or  "/dev/ttyUSB" in port:
+					device_dropdown['values'] = port	
+					accepted_port.append(port)
+					# port_dropdown.configure(values=com_ports)item
+					# port_dropdown.set(port) 
+					applog(port+"\n")		
+					# ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+					root.title("Serialone on " + port)
 			
-		device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+			device_dropdown.configure(values=accepted_port)
+			if accepted_port:
+				device_dropdown.set(accepted_port[0])	
+				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+				
+			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 
-	# for i in range(9):
-	# 	# Configure the serial port
-	# 	try:
-	# 		ser = serial.Serial('/dev/ttyUSB'+str(i), baudrate=9600, timeout=1)  # Replace 'COM3' with your port
-	# 		root.title("Serial Reader on " + 'ttyUSB'+str(i))
-	# 		break
-	# 	except Exception as e:
-	# 		text_box.insert(tk.END, f"Error: {e}\n")
-
+		# for i in range(9):
+		# 	# Configure the serial port
+		# 	try:
+		# 		ser = serial.Serial('/dev/ttyUSB'+str(i), baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+		# 		root.title("Serial Reader on " + 'ttyUSB'+str(i))
+		# 		break
+		# 	except Exception as e:
+		# 		text_box.insert(tk.END, f"Error: {e}\n")
+# list_ser_ports()
 # window.geometry(CenterWindowToDisplay(window, 900, 400, window._get_window_scaling()))
 # Start the Tkinter event loop
 # root.iconbitmap('rc.ico')
@@ -974,5 +984,20 @@ def on_closing():
 		applog("Serial port closed.\n")
 	save_config()
 	root.destroy()
+
+def scan_ports():
+	global ser
+	# print("Scanning for COM ports...")
+	list_ser_ports()
+	threading.Timer(5, scan_ports).start()
+
+scan_ports()
+	# if ser.isOpen():
+	# 	ser.close()
+	# 	print("Serial port closed.")
+	# 	applog("Serial port closed.\n")
+	# # scan_ports()
+	# # root.after(1000, scan_ports)
+	# root.after(1000, scan_ports)
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
