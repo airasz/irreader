@@ -214,8 +214,24 @@ def send_command(event):
 	command = command_entry.get()
 	lastlist=hystory_listbox.get(hystory_listbox.size()-1)
 	# print(f'cmd : -{command}- | lastlist : -{lastlist}-')
+
+
+	# for i in range(0, len(CMD_HISTORY)):
+	# 	if command == CMD_HISTORY[i]:
+	# 		print(f"command already in history: {command}")
+	# 		break
+	
+
 	if command != lastlist:
-		print("repeat last")
+		# for i in range(0, hystory_listbox.size()):
+		# 	if command == hystory_listbox.get(i):
+		# 		print(f"command already in listbox: {command}")
+		# 		hystory_listbox.delete(i)
+		# 		CMD_HISTORY.pop(i)
+		# 		hystory_listbox.insert(tk.End, command)
+		# 		CMD_HISTORY.append(command)
+		# 		break
+
 		if len(CMD_HISTORY) == MAX_HISTORY:
 			CMD_HISTORY.pop(0)
 		# hystory_listbox.insert(tk.END, command)
@@ -223,6 +239,15 @@ def send_command(event):
 		POINTER_HISTORY=hystory_listbox.size()
 		print(f'POINTER_HISTORY: {POINTER_HISTORY}')
 		command_entry.delete(0, tk.END)
+
+		for i in range(0, hystory_listbox.size()):
+			if command == hystory_listbox.get(i):
+				print(f"command already in listbox: {command} at pos {i}")
+				hystory_listbox.delete(i)
+				CMD_HISTORY.pop(i)
+				POINTER_HISTORY=hystory_listbox.size()
+				break
+		
 		save_history()
 		# draw_history()
 		update_history(command)
@@ -276,6 +301,9 @@ def traceForwardCommand(event):
 	global ser
 	global POINTER_HISTORY
 	POINTER_HISTORY=POINTER_HISTORY + 1
+	print(f'POINTER HISTORY : {POINTER_HISTORY} | CMD_HISTORY size : {len(CMD_HISTORY)}')
+	if POINTER_HISTORY > (len(CMD_HISTORY)-1):
+		POINTER_HISTORY=(len(CMD_HISTORY)-1)
 	command = hystory_listbox.get(POINTER_HISTORY)
 	if POINTER_HISTORY > 1 and POINTER_HISTORY < hystory_listbox.size():
 		hystory_listbox.see(POINTER_HISTORY)
