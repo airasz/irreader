@@ -212,17 +212,24 @@ def send_command(event):
 	global POINTER_HISTORY
 	global CMD_HISTORY
 	command = command_entry.get()
-	
-	if len(CMD_HISTORY) == MAX_HISTORY:
-		CMD_HISTORY.pop(0)
-	# hystory_listbox.insert(tk.END, command)
-	CMD_HISTORY.append(command)
-	POINTER_HISTORY=hystory_listbox.size()
-	print(f'POINTER_HISTORY: {POINTER_HISTORY}')
-	command_entry.delete(0, tk.END)
-	save_history()
-	# draw_history()
-	update_history(command)
+	lastlist=hystory_listbox.get(hystory_listbox.size()-1)
+	# print(f'cmd : -{command}- | lastlist : -{lastlist}-')
+	if command != lastlist:
+		print("repeat last")
+		if len(CMD_HISTORY) == MAX_HISTORY:
+			CMD_HISTORY.pop(0)
+		# hystory_listbox.insert(tk.END, command)
+		CMD_HISTORY.append(command)
+		POINTER_HISTORY=hystory_listbox.size()
+		print(f'POINTER_HISTORY: {POINTER_HISTORY}')
+		command_entry.delete(0, tk.END)
+		save_history()
+		# draw_history()
+		update_history(command)
+	else:	
+		hystory_listbox.see(tk.END)  # Scroll to the end
+
+
 	crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
 		command += "\r\n"
@@ -361,7 +368,8 @@ def close_serial():
 	status_label.configure(text="Serial closed")
 def cleartb():
 	text_box.delete("1.0", "end")	
-
+def clear_monitor():
+	texbox_monitor.delete("1.0", "end")
 def copytoclip():
 	filtr = text_box.get(1.0, "end-1c")
 	pyperclip.copy(filtr)
@@ -469,13 +477,13 @@ def on_mouse_wheel_listbox(event):
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 #====level 1 frame=========
 topFrame=customtkinter.CTkFrame(root,border_width=0,border_color="#000000",fg_color=BG_LVL_1, width=300, height=100)
-topFrame.pack(side="top", fill="x")
+topFrame.pack(side="top", fill="x",pady=2)
 middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
-middleFrame.pack( fill="x", side="top")
+middleFrame.pack( fill="x", side="top",pady=2)
 monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
-monitorframe.pack(side="top", fill="x")
+monitorframe.pack(side="top", fill="x",pady=2)
 statusFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)	
-statusFrame.pack(side="top", fill="x")
+statusFrame.pack(side="top", fill="x",pady=2)
 #===========level 2 frame=========
 topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
 topTopFrame.pack(side="top", padx=5, pady=5, fill="x")
@@ -509,7 +517,7 @@ historyFrame.pack(pady=1, padx=1, expand=True, side="top", fill="x")
 hystory_listbox=CTkListbox(historyFrame, height=200, border_width=0,border_color="#01595a",bg_color=NAVY, fg_color=CYAN, text_color=NAVY)
 hystory_listbox.pack(padx=5, pady=5, expand=True, side="top", fill="x")
 hystory_listbox.insert(0, "Hystory here..")
-inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
+inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
 inputFrame.pack( fill="x", side="top", padx=5, pady=5)
 
 status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor=YELLOW)
@@ -536,12 +544,12 @@ datamode_dropdown.pack(pady=5, padx=3,side="left")
 
 texbox_monitor=mytextbox(monitorframe, height=200, width=500, bordercolor="#ffff00", fg=YELLOW, bg="transparent" )
 texbox_monitor.configure(text_color=BLACK)
-texbox_monitor.pack(padx=2, fill="x",pady=3)
+texbox_monitor.pack(padx=5, fill="x",pady=3)
 
-resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=0, border_color="#aaff00", fg_color="#00b8cc")
-resultControlFrame.pack(fill="x",side="top")
+resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+resultControlFrame.pack(fill="x",side="top", padx=5)
 
-resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#049589")
+resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
 # resultFrame.pack(fill="x",side="bottom") 
 
 filterFrame = customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color="#00a6a0")
@@ -549,7 +557,7 @@ filterFrame = customtkinter.CTkFrame(middleFrame, width=300, height=100, border_
 
 postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=0, border_color="#aaff00", fg_color="#00b8cc")
 #postreadFrame.pack(fill="x",side="right") 
-clear_button2= mybutton(resultControlFrame,text="clear",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=cleartb)
+clear_button2= mybutton(resultControlFrame,text="clear",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=clear_monitor)
 clear_button2.pack(pady=5, padx=3,side="left")
 outout_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Output", fg_color="#01595a", border_width=2, border_color="#01595a")
 outout_cb.pack(pady=5, padx=3,side="left")
