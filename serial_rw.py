@@ -420,6 +420,7 @@ def copytoclip():
 def on_baudrate_select(event):
 	"""Handle the event when a new item is selected in the combobox."""
 	selected_baudrate = baudrate_dropdown.get()
+	selected_baudrate=baudrate_option.get()
 	applog( f"Selected Baudrate: {selected_baudrate}\n")
 	if selected_baudrate != 'custom':
 		if ser and ser.isOpen():
@@ -704,6 +705,8 @@ label_baud=mylabel(subTopLeftFrame1, txt="Baudrate", bg="transparent", justify="
 label_baud.pack(side="left", padx=10)
 baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly", values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"], width=100, border_width=2,border_color="#01595a", command=on_baudrate_select)
 baudrate_dropdown.pack(pady=5, padx=3,side="right")
+baudrate_option=myOptionMenu(subTopLeftFrame1,values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"],width=100, command=on_baudrate_select)
+baudrate_option.pack(pady=5,padx=3,side="right")
 label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor=NAVY)
 label_flow.pack(side="left", padx=10)
 flowrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame2, state="readonly", values=["none","Hardware", "Software"], width=100, border_width=2,border_color="#01595a", command=on_flowrate_select)
@@ -769,11 +772,12 @@ cb_appendlog.pack(pady=5, padx=3,side="left")
 
 def list_ser_ports():
 	global FIRST_SCANNING
-	if 
+	
 	if os.name== 'nt':
-		# print("we in windows")
+		if FIRST_SCANNING :
+			print("we in windows")
 		# text_box.insert(tk.END, "we in windows\n")    
-		# applog( "we in windows\n")
+			applog( "we in windows\n")
 		com_ports = list_com_ports()
 		accepted_port=[]
 		portn=0
@@ -853,6 +857,8 @@ def list_ser_ports():
 		# 		break
 		# 	except Exception as e:
 		# 		text_box.insert(tk.END, f"Error: {e}\n")
+	if FIRST_SCANNING is False:
+		FIRST_SCANNING = True
 # list_ser_ports()
 # window.geometry(CenterWindowToDisplay(window, 900, 400, window._get_window_scaling()))
 # Start the Tkinter event loop
@@ -886,7 +892,8 @@ def setupserial():
 		ser=serial.Serial(
 			# port=device_dropdown.get(),
 			port=device_option.get(),
-			baudrate=int(baudrate_dropdown.get()),
+			# baudrate=int(baudrate_dropdown.get()),
+			baudrate=int(baudrate_option.get()),
 			parity=getParity(parity_dropdown.get()),
 			
 			stopbits=getStopBit(stopbit_dropdown.get()),
@@ -909,7 +916,8 @@ def load_config():
 		with open('srwconfig.json', 'r') as f:
 			config = json.load(f)
 			# device_dropdown.set(config['port'])	
-			baudrate_dropdown.set(config['baudrate'])
+			# baudrate_dropdown.set(config['baudrate'])
+			baudrate_option.set(config['baudrate'])
 			flowrate_dropdown.set(config['flowrate'])
 			openmode_dropdown.set(config['openmode'])
 			databit_dropdown.set(config['databit'])

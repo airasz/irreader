@@ -1,5 +1,5 @@
 {
-    "baudrate": "115200",
+    "baudrate": "",
     "flowrate": "Software",
     "openmode": "0",
     "databit": "8",
