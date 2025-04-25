@@ -17,7 +17,7 @@ import json
 # import ctkmenu
 
 com_ports = []
-
+FIRST_SCANNING=False
 BACKGROUND = "#d9d9d9"
 FOREGROUND = "black"
 BUTTON_BACKGROUND = "#08b19a"
@@ -768,6 +768,8 @@ cb_appendlog.pack(pady=5, padx=3,side="left")
 # )
 
 def list_ser_ports():
+	global FIRST_SCANNING
+	if 
 	if os.name== 'nt':
 		# print("we in windows")
 		# text_box.insert(tk.END, "we in windows\n")    
@@ -792,12 +794,13 @@ def list_ser_ports():
 				# applog(f"total port: {portn}\n")
 				if port !="COM1":
 					accepted_port.append(port)
-					ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+					# ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 					root.title("Serialone on " + port)
 			print(f'total port: {portn}')
 			if portn ==1:
 				device_dropdown.set(com_ports[0])
 				device_option.set(com_ports[0])
+				applog("No COM ports found.\n")
 			else:
 				device_dropdown.set(com_ports[1])
 				device_option.set(com_ports[1]) 
@@ -807,13 +810,12 @@ def list_ser_ports():
 			device_option.configure(accepted_port)
 			if accepted_port:
 				device_dropdown.set(accepted_port[0])	
-				device_option.set(com_ports[0])
+				device_option.set(accepted_port[0])
 				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 			device_option.bind("<<ComboboxSelected>>", on_port_select)
 				# item
-			applog("No COM ports found.\n")
 	else:
 		# applog( "we in linux\n")
 		com_ports = list_com_ports()
