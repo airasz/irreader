@@ -3,6 +3,7 @@ import customtkinter
 from customtkinter import CTkButton
 from customtkinter import CTkEntry
 from customtkinter import CTk
+from customtkinter import CTkOptionMenu
 from CTkListbox import *
 from tkinter import ttk
 import serial
@@ -22,7 +23,8 @@ FOREGROUND = "black"
 BUTTON_BACKGROUND = "#08b19a"
 BUTTON_ACTIVE_BACKGROUND = "#1fcaf5"
 RED = "#FF0000"
-GREEN = "#00FF00"
+GREEN = "#00AA00"
+DARKGREEN= "#005800"
 BLUE = "#0000FF"
 LIGHTBLUE = "#9DB8E6"
 YELLOW = "#FFFF00"
@@ -35,7 +37,7 @@ WHITE = "#FFFFFF"
 GRAY = "#808080"
 CYAN = "#00FFFF"
 MAGENTA = "#FF00FF"
-LIME = "#00FF00"
+LIME = "#44FF00"
 TEAL = "#008080"
 NAVY = "#000080"
 MAROON = "#800000"
@@ -93,7 +95,12 @@ activeforeground=FOREGROUND,):
 	btn = CTkButton(frame, text=text, 
 	fg_color=BUTTON_BACKGROUND, command=command, corner_radius=50)
 	return btn
-
+def myOptionMenu(
+	frame, values, state="", width=10, corner_radius=20, command="" 
+):
+	om=CTkOptionMenu(frame, state=state,values=values, button_color=BLACK, corner_radius=corner_radius, text_color=YELLOW, dropdown_fg_color=DARKGREEN,
+	dropdown_text_color=YELLOW, width=width,)
+	return om
 
 #contex menu
 def popup_menu2(event,frame):
@@ -213,6 +220,9 @@ def send_command(event):
 	global POINTER_HISTORY
 	global CMD_HISTORY
 	command = command_entry.get()
+	if command == "":
+		applog("No command entered.\n")
+		return
 	lastlist=hystory_listbox.get(hystory_listbox.size()-1)
 	# print(f'cmd : -{command}- | lastlist : -{lastlist}-')
 
@@ -255,8 +265,8 @@ def send_command(event):
 	else:	
 		hystory_listbox.see(tk.END)  # Scroll to the end
 
-
-	crlf = crlf_dropdown.get()
+	crlf= crlf_optionmenu.get()
+	# crlf = crlf_dropdown.get()
 	if crlf == "CRLF":
 		command += "\r\n"
 	elif crlf == "LF":
@@ -559,6 +569,8 @@ command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
 
 crlf_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["CRLF","LF", "CR"], width=100, border_width=2,border_color="#01595a")
 crlf_dropdown.pack(pady=5, padx=3,side="left")
+crlf_optionmenu=myOptionMenu(inputFrame, values=["CRLF", "CR", "LF"],width=50)
+crlf_optionmenu.pack(pady=5, padx=3, side="left")
 chr_del_label=mylabel(inputFrame, txt="chr del", bg="transparent", justify="right", tcolor=GREEN)
 chr_del_label.pack(side="left", padx=10)
 chr_del_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["off","1 MS", "2MS"], width=100, border_width=2,border_color="#01595a")
@@ -668,8 +680,8 @@ label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="
 label_device.pack(side="left", padx=10)
 device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a", command=on_port_select)
 device_dropdown.pack(pady=5, padx=3,side="left")
-device_option= customtkinter.CTkOptionMenu(topTopFrame, values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, corner_radius=8, command=on_port_select)
-
+device_option= myOptionMenu(topTopFrame, values=["serial port"], width=100, corner_radius=8, command=on_port_select)
+device_option.pack(pady=5, padx=3,side="left")
 
 # The OptionMenu is a button with a menu attached. The menu typically grows in height until it reaches the edge of the screen. The choices are fixed, and the user can't type in their own value.
 
@@ -677,7 +689,6 @@ device_option= customtkinter.CTkOptionMenu(topTopFrame, values=["/ttyUSB0","/tty
 
 # The Combobox is also a bit easier to add and remove items after the widget has been created. The OptionMenu was designed to have a static number of items that are set when the widget is created.
 
-device_option.pack(pady=5, padx=3,side="left")
 cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
 cb_rts.pack(pady=5, padx=3,side="left")
 cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
@@ -758,9 +769,9 @@ cb_appendlog.pack(pady=5, padx=3,side="left")
 
 def list_ser_ports():
 	if os.name== 'nt':
-		print("we in windows")
+		# print("we in windows")
 		# text_box.insert(tk.END, "we in windows\n")    
-		applog( "we in windows\n")
+		# applog( "we in windows\n")
 		com_ports = list_com_ports()
 		accepted_port=[]
 		portn=0
@@ -768,16 +779,17 @@ def list_ser_ports():
 			# print("Available COM ports:")
 			# port_dropdown['values'] = com_ports	
 			device_dropdown.configure(values=com_ports)
+			device_option.configure(values=com_ports)
 			# accepted_port.append(port)
 			# text_box.insert(tk.END, "Available COM ports:\n")
-			applog( "Available COM ports:\n")
+			# applog( "Available COM ports:\n")
 			for port in com_ports:
 				portn+=1
 				print(port)
 				# text_box.insert(tk.END, f"port: {port}\n")
 				# text_box.insert(tk.END, f"total port: {portn}\n")
-				applog(f"port: {port}\n")
-				applog(f"total port: {portn}\n")
+				# applog(f"port: {port}\n")
+				# applog(f"total port: {portn}\n")
 				if port !="COM1":
 					accepted_port.append(port)
 					ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
@@ -785,20 +797,25 @@ def list_ser_ports():
 			print(f'total port: {portn}')
 			if portn ==1:
 				device_dropdown.set(com_ports[0])
+				device_option.set(com_ports[0])
 			else:
-				device_dropdown.set(com_ports[1]) 
+				device_dropdown.set(com_ports[1])
+				device_option.set(com_ports[1]) 
 
 			
 			device_dropdown.configure(values=accepted_port)
+			device_option.configure(accepted_port)
 			if accepted_port:
 				device_dropdown.set(accepted_port[0])	
+				device_option.set(com_ports[0])
 				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+			device_option.bind("<<ComboboxSelected>>", on_port_select)
 				# item
 			applog("No COM ports found.\n")
 	else:
-		applog( "we in linux\n")
+		# applog( "we in linux\n")
 		com_ports = list_com_ports()
 		accepted_port=[]
 		if com_ports:
@@ -808,19 +825,23 @@ def list_ser_ports():
 				# scom_ports=str(com_ports)
 				if "/dev/ttyACM" in port or  "/dev/ttyUSB" in port:
 					device_dropdown['values'] = port	
+					device_option['values']=port
 					accepted_port.append(port)
 					# port_dropdown.configure(values=com_ports)item
 					# port_dropdown.set(port) 
-					applog(port+"\n")		
+					# applog(port+"\n")		
 					# ser = serial.Serial(port, baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 					root.title("Serialone on " + port)
 			
 			device_dropdown.configure(values=accepted_port)
+			device_option.configure(values=accepted_port)
 			if accepted_port:
 				device_dropdown.set(accepted_port[0])	
+				device_option.set(accepted_port[0])
 				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+			device_option.bind("<<ComboboxSelected>>", on_port_select)
 
 		# for i in range(9):
 		# 	# Configure the serial port
@@ -861,7 +882,8 @@ def setupserial():
 	global ser
 	try:
 		ser=serial.Serial(
-			port=device_dropdown.get(),
+			# port=device_dropdown.get(),
+			port=device_option.get(),
 			baudrate=int(baudrate_dropdown.get()),
 			parity=getParity(parity_dropdown.get()),
 			
@@ -893,6 +915,7 @@ def load_config():
 			# print(f'parity > {config['parity']}')
 			stopbit_dropdown.set(config['stopbit'])
 			crlf_dropdown.set(config['crlf'])
+			crlf_optionmenu.set(config['crlf'])
 			chr_del_dropdown.set(config['chr_del'])
 			datamode_dropdown.set(config['datamode'])
 	except FileNotFoundError:
@@ -929,7 +952,8 @@ def save_config():
 		'databit': databit_dropdown.get(),
 		'parity': parity_dropdown.get(),
 		'stopbit': stopbit_dropdown.get(),
-		'crlf': crlf_dropdown.get(),
+		# 'crlf': crlf_dropdown.get(),
+		'crlf': crlf_optionmenu.get(),
 		'chr_del': chr_del_dropdown.get(),
 		'datamode': datamode_dropdown.get()
 	}
