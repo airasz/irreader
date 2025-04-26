@@ -7,5 +7,6 @@
     "stopbit": "1",
     "crlf": "CRLF",
     "chr_del": "0",
-    "datamode": "ASCII"
+    "datamode": "ASCII",
+    "autoreconnect": 1
 }

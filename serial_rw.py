@@ -58,7 +58,9 @@ BG_LVL_4 = CYAN
 POINTER_HISTORY = 0
 CMD_HISTORY = []
 MAX_HISTORY = 50
+OSNAME=""
 
+LBFOCUS=0
 root = customtkinter.CTk()
 root.title("Serialone v 1")
 
@@ -575,14 +577,19 @@ def on_port_select(event):
 	root.title("Serial Readerdrop on " + port)
 
 def on_mouse_wheel_listbox(event):
+	global LBFOCUS
 	"""Handle the event when the mouse wheel is scrolled."""
 	print(f"Mouse wheel scrolled: {event.delta}")
-	if event.delta > 0:
-		hystory_listbox.yview_scroll(-1, "units")
+	if event.delta > 0:	
+		LBFOCUS-=1
+		# hystory_listbox.yview_scroll(-1, "units")
 		# hystory_listbox.
 	else:
-		hystory_listbox.yview_scroll(1, "units")
-LBFOCUS=0
+		LBFOCUS+=1
+		# hystory_listbox.yview_scroll(1, "units")
+		
+	hystory_listbox.select(LBFOCUS)
+	hystory_listbox.see(LBFOCUS)
 def on_mouse_wheel_listbox_up(event):
 	global LBFOCUS
 	LBFOCUS-=1
@@ -596,12 +603,26 @@ def on_mouse_wheel_listbox_down(event):
 def on_mouse_wheel_entry(event):
 	"""Handle the event when the mouse wheel is scrolled."""
 	print(f"Mouse wheel scrolled: {event.delta}")
-	if event.delta > 0:
+	
+	global LBFOCUS
+	"""Handle the event when the mouse wheel is scrolled."""
+	print(f"Mouse wheel scrolled: {event.delta}")
+	if event.delta > 0:	
+		LBFOCUS-=1
 		# hystory_listbox.yview_scroll(-1, "units")
-		traceBackCommand
+		# hystory_listbox.
 	else:
+		LBFOCUS+=1
 		# hystory_listbox.yview_scroll(1, "units")
-		traceForwardCommand
+		
+	hystory_listbox.select(LBFOCUS)
+	hystory_listbox.see(LBFOCUS)
+	# if event.delta > 0:
+	# 	# hystory_listbox.yview_scroll(-1, "units")
+	# 	traceBackCommand
+	# else:
+	# 	# hystory_listbox.yview_scroll(1, "units")
+	# 	traceForwardCommand
 
 def on_cb_ar_change(event):
 	print("ar cb check box changed")
@@ -793,6 +814,7 @@ cb_dtr=myCheckBox(topTopFrame, text="DTR")
 cb_dtr.pack(pady=5, padx=3,side="left")
 # cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
 cb_ar=myCheckBox(topTopFrame,text="Auto reconnect", command=on_cb_ar_change)
+# cb_ar.configure(onvalue="on",offvalue="off")
 cb_ar.pack(pady=5, padx=3,side="left")
 
 
@@ -836,9 +858,9 @@ stopbit_dropdown= customtkinter.CTkComboBox(subTopRightFrame3, state="readonly",
 stopbit_option=myOptionMenu(subTopRightFrame3, state="readonly", values=["1","2"], width=100)
 stopbit_option.pack(pady=5, padx=3,side="right")
 
-cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Display CTRL Character", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_ctrl_char= myCheckBox(topNextFrame, text="Display CTRL Character")
 cb_ctrl_char.pack(pady=5, padx=3,side="top",anchor="w")
-cb_show_timestamp= customtkinter.CTkCheckBox(topNextFrame, text="Show Timestamp", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_show_timestamp= myCheckBox(topNextFrame, text="Show Timestamp")
 cb_show_timestamp.pack(pady=5, padx=3,side="top",anchor="w")
 setlogFrame= customtkinter.CTkFrame(topNextFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=CYAN)
 setlogFrame.pack(fill="x",expand=True, side="bottom", padx=5, pady=5)
@@ -877,15 +899,20 @@ cb_appendlog.pack(pady=5, padx=3,side="left")
 #     stopbits=serial.STOPBITS_ONE,
 #     bytesize=serial.EIGHTBITS,
 # )
+OSNAME = os.name
+if OSNAME == 'nt':
+	print("we in windows")   
+	applog( "we in windows\n")
+	hystory_listbox.bind("<MouseWheel>", on_mouse_wheel_listbox) # only work on windows os
+else:
+	applog( "we in linux\n")
+	hystory_listbox.bind("<Button-4>", on_mouse_wheel_listbox_up)
+	hystory_listbox.bind("<Button-5>", on_mouse_wheel_listbox_down)
 
 def list_ser_ports():
 	global FIRST_SCANNING
-	
+	print(f'os name: {os.name }')
 	if os.name== 'nt':
-		if FIRST_SCANNING :
-			print("we in windows")
-		# text_box.insert(tk.END, "we in windows\n")    
-			applog( "we in windows\n")
 		com_ports = list_com_ports()
 		accepted_port=[]
 		portn=0
@@ -912,7 +939,7 @@ def list_ser_ports():
 			if portn ==1:
 				device_dropdown.set(com_ports[0])
 				device_option.set(com_ports[0])
-				applog("No COM ports found.\n")
+				# applog("No COM ports found.\n")
 			else:
 				device_dropdown.set(com_ports[1])
 				device_option.set(com_ports[1]) 
@@ -926,11 +953,11 @@ def list_ser_ports():
 				if cb_ar.get() is True:
 					ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
-			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
+			# device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 			device_option.bind("<<ComboboxSelected>>", on_port_select)
 				# item
 	else:
-		# applog( "we in linux\n")
+
 		com_ports = list_com_ports()
 		accepted_port=[]
 		if com_ports:
@@ -1026,6 +1053,8 @@ def setupserial():
 
 	
 def load_config():
+	
+	# print(f'ar : {cb_ar.get()}')
 	try:
 		with open('srwconfig.json', 'r') as f:
 			config = json.load(f)
@@ -1049,6 +1078,11 @@ def load_config():
 			chr_del_dropdown.set(config['chr_del'])
 			# datamode_dropdown.set(config['datamode'])
 			datamode_option.set(config['datamode'])
+			if config['autoreconnect']:
+				cb_ar.select()
+			else:
+				cb_ar.deselect()
+			# cb_ar.StringVar(config['autoreconnect'])
 	except FileNotFoundError:
 		print("Config file not found, using default settings.")
 load_config();
@@ -1075,6 +1109,8 @@ def save_history():
 		json.dump(CMD_HISTORY, f, indent=4)
 
 def save_config():
+	
+	print(f'ar : {cb_ar.get()}')
 	config = {
 		# 'port': device_dropdown.get(),
 		# 'baudrate': baudrate_dropdown.get(),
@@ -1094,7 +1130,9 @@ def save_config():
 		'chr_del': chr_del_dropdown.get(),
 		# 'chr_del': chr_del_o.get(),
 		# 'datamode': datamode_dropdown.get(),
-		'datamode':datamode_option.get()
+		'datamode':datamode_option.get(),
+		'autoreconnect':cb_ar.get()
+
 	}
 	with open('srwconfig.json', 'w') as f:
 		json.dump(config, f, indent=4)
@@ -1110,10 +1148,10 @@ command_entry.bind("<MouseWheel>", on_mouse_wheel_entry)
 hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
 hystory_listbox.bind("<Double-Button-1>", on_hystory_double_click)
 # hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
-hystory_listbox.bind("<MouseWheel>", on_mouse_wheel_listbox)
+# hystory_listbox.bind("<MouseWheel>", on_mouse_wheel_listbox) # only work on windows os
 hystory_listbox.bind("<Button-3>", popup_menu)
-hystory_listbox.bind("<Button-4>", on_mouse_wheel_listbox_up)
-hystory_listbox.bind("<Button-5>", on_mouse_wheel_listbox_down)
+# hystory_listbox.bind("<Button-4>", on_mouse_wheel_listbox_up)
+# hystory_listbox.bind("<Button-5>", on_mouse_wheel_listbox_down)
 # hystory_listbox.bind("<Button-3>", popup_menu2(event, floating_window))
 # hystory_listbox.bind("<Button-3>", lambda event: popup_menu2(event, floating_window))
 # hystory_listbox.bind("<Button-3>", lambda event: popup_menu(event, floating_window))
