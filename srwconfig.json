@@ -1,11 +1,11 @@
 {
-    "baudrate": "",
+    "baudrate": "115200",
     "flowrate": "Software",
     "openmode": "0",
     "databit": "8",
     "parity": "none",
     "stopbit": "1",
-    "crlf": "CR",
+    "crlf": "CRLF",
     "chr_del": "0",
     "datamode": "ASCII"
 }

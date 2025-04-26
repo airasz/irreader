@@ -1,9 +1,10 @@
 import tkinter as tk
 import customtkinter
-from customtkinter import CTkButton
-from customtkinter import CTkEntry
-from customtkinter import CTk
-from customtkinter import CTkOptionMenu
+# from customtkinter import CTkButton
+# from customtkinter import CTkEntry
+# from customtkinter import CTk
+# from customtkinter import CTkOptionMenu
+from customtkinter import *
 from CTkListbox import *
 from tkinter import ttk
 import serial
@@ -95,13 +96,20 @@ activeforeground=FOREGROUND,):
 	btn = CTkButton(frame, text=text, 
 	fg_color=BUTTON_BACKGROUND, command=command, corner_radius=50)
 	return btn
+
 def myOptionMenu(
 	frame, values, state="", width=10, corner_radius=20, command="" 
 ):
 	om=CTkOptionMenu(frame, state=state,values=values, button_color=BLACK, corner_radius=corner_radius, text_color=YELLOW, dropdown_fg_color=DARKGREEN,
-	dropdown_text_color=YELLOW, width=width,)
+	 width=width,dropdown_hover_color=BLACK,dropdown_text_color=WHITE)
 	return om
-
+def myCheckBox(
+	frame, text="", command=""
+):
+	cb=customtkinter.CTkCheckBox(
+		frame, text=text, fg_color=BLACK, border_width=2, border_color=WHITE, text_color= WHITE
+	)
+	return cb
 #contex menu
 def popup_menu2(event,frame):
 	try:
@@ -283,6 +291,54 @@ def send_command(event):
 		# command_entry.delete(0, tk.END)
 		# hystory_listbox.see(tk.END)  # Scroll to the end
 		applog("Serial port is not open.\n")
+def send_toserial():
+	global ser
+	global POINTER_HISTORY
+	global CMD_HISTORY
+	command = command_entry.get()
+	if command == "":
+		applog("No command entered.\n")
+		return
+	lastlist=hystory_listbox.get(hystory_listbox.size()-1)
+	if command != lastlist:
+		if len(CMD_HISTORY) == MAX_HISTORY:
+			CMD_HISTORY.pop(0)
+		# hystory_listbox.insert(tk.END, command)
+		CMD_HISTORY.append(command)
+		POINTER_HISTORY=hystory_listbox.size()
+		print(f'POINTER_HISTORY: {POINTER_HISTORY}')
+		command_entry.delete(0, tk.END)
+
+		for i in range(0, hystory_listbox.size()):
+			if command == hystory_listbox.get(i):
+				print(f"command already in listbox: {command} at pos {i}")
+				hystory_listbox.delete(i)
+				CMD_HISTORY.pop(i)
+				POINTER_HISTORY=hystory_listbox.size()
+				break
+		
+		save_history()
+		# draw_history()
+		update_history(command)
+	else:	
+		hystory_listbox.see(tk.END)  # Scroll to the end
+
+	crlf= crlf_optionmenu.get()
+	# crlf = crlf_dropdown.get()
+	if crlf == "CRLF":
+		command += "\r\n"
+	elif crlf == "LF":
+		command += "\n"
+	elif crlf == "CR":
+		command += "\r"
+	else:
+		pass
+
+	if ser.isOpen():
+		write_serial(command)
+		applog(f"Command sent: {command}\n")
+	else:
+		applog("Serial port is not open.\n")
 def traceBackCommand(event):
 	global ser
 	global POINTER_HISTORY
@@ -319,6 +375,7 @@ def traceForwardCommand(event):
 	if POINTER_HISTORY > 1 and POINTER_HISTORY < hystory_listbox.size():
 		hystory_listbox.see(POINTER_HISTORY)
 	hystory_listbox.see(POINTER_HISTORY+1)
+# hystory_listbox.bind(("<Button-4>", on_mouse_wheel_listbox))
 	# POINTER_HISTORY=POINTER_HISTORY + 1
 	if ser.isOpen():
 		# write_serial(command)
@@ -347,8 +404,15 @@ def on_hystory_select(event):
 def on_hystory_double_click(event):
 	"""Handle the event when a new item is selected in the listbox."""
 	selected_item = hystory_listbox.get(hystory_listbox.curselection())
-	applog(f"Selected item: {selected_item}\n")
-	ser.write(selected_item.encode("utf-8"))
+	applog(f"send item: {selected_item}\n")
+
+	command_entry.delete(0, tk.END)
+	command_entry.insert(0, selected_item)
+	send_toserial()
+
+	# if ser.is_open():
+	# 	ser.write(selected_item.encode("utf-8"))
+	# 	command_entry.delete(0, tk.END)
 	# hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
 	# hystory_listbox.bind("<Double-Button-1>", traceBackCommand)
 	# hystory_listbox.bind("<Button-3>", traceForwardCommand)
@@ -368,9 +432,11 @@ def update_textbox(line):
 			text_box.insert(tk.END, f"{line}\n")
 			text_box.see(tk.END)  # Scroll to the end
 	if line!="":
-		if datamode_dropdown.get()=="ASCII":
+		# if datamode_dropdown.get()=="ASCII":
+		if datamode_option.get()=="ASCII":
 			applog(line+"\n")
-		elif datamode_dropdown.get()=="HEX":
+		# elif datamode_dropdown.get()=="HEX":
+		elif databit_option.get()=="HEX":
 			applog(line.encode())
 			applog("\n")
 
@@ -419,7 +485,7 @@ def copytoclip():
 
 def on_baudrate_select(event):
 	"""Handle the event when a new item is selected in the combobox."""
-	selected_baudrate = baudrate_dropdown.get()
+	# selected_baudrate = baudrate_dropdown.get()
 	selected_baudrate=baudrate_option.get()
 	applog( f"Selected Baudrate: {selected_baudrate}\n")
 	if selected_baudrate != 'custom':
@@ -447,7 +513,8 @@ def on_flowrate_select(event):
 	global ser
 	"""Handle the event when a new item is selected in the combobox."""
 	# print(f"Selected Flow Control: {selected_flowrate}")
-	selected_flowrate = flowrate_dropdown.get()
+	# selected_flowrate = flowrate_dropdown.get()
+	selected_flowrate=flowrate_option.get()
 	applog( f"Selected Flow Control: {selected_flowrate}\n")
 	if selected_flowrate == 'none':
 		if ser and ser.isOpen():
@@ -510,10 +577,33 @@ def on_mouse_wheel_listbox(event):
 	print(f"Mouse wheel scrolled: {event.delta}")
 	if event.delta > 0:
 		hystory_listbox.yview_scroll(-1, "units")
+		# hystory_listbox.
 	else:
 		hystory_listbox.yview_scroll(1, "units")
+LBFOCUS=0
+def on_mouse_wheel_listbox_up(event):
+	global LBFOCUS
+	LBFOCUS-=1
+	hystory_listbox.select(LBFOCUS)
+	hystory_listbox.see(LBFOCUS)
+def on_mouse_wheel_listbox_down(event):
+	global LBFOCUS
+	LBFOCUS+=1
+	hystory_listbox.select(LBFOCUS)
+	hystory_listbox.see(LBFOCUS)
+def on_mouse_wheel_entry(event):
+	"""Handle the event when the mouse wheel is scrolled."""
+	print(f"Mouse wheel scrolled: {event.delta}")
+	if event.delta > 0:
+		# hystory_listbox.yview_scroll(-1, "units")
+		traceBackCommand
+	else:
+		# hystory_listbox.yview_scroll(1, "units")
+		traceForwardCommand
 
-
+def on_cb_ar_change(event):
+	print("ar cb check box changed")
+	save_config()
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 #====level 1 frame=========
 topFrame=customtkinter.CTkFrame(root,border_width=0,border_color="#000000",fg_color=BG_LVL_1, width=300, height=100)
@@ -537,8 +627,6 @@ topRightFrame.pack(side="left", padx=5, pady=5)
 topNextFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
 topNextFrame.pack(side="left", padx=5, pady=5, fill="both", expand=True)
 
-
-
 subTopLeftFrame1= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
 subTopLeftFrame1.pack(side="top", padx=5, pady=5,expand=True,fill="x")
 subTopLeftFrame2= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
@@ -554,7 +642,9 @@ subTopRightFrame3.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
 
 historyFrame=customtkinter.CTkFrame(middleFrame, height=200, border_width=0,border_color=BLACK, fg_color=NAVY) 	 
 historyFrame.pack(pady=1, padx=1, expand=True, side="top", fill="x")
-hystory_listbox=CTkListbox(historyFrame, height=200, border_width=0,border_color="#01595a",bg_color=NAVY, fg_color=CYAN, text_color=NAVY)
+hystory_listbox=CTkListbox(historyFrame, label_text="history",label_fg_color=BLACK, label_text_color=WHITE, height=200, 
+border_width=0,border_color="#01595a",bg_color=NAVY, fg_color=CYAN, hover_color=LIME, highlight_color= WHITE,
+text_color=NAVY, scrollbar_button_color=BLACK)
 hystory_listbox.pack(padx=5, pady=5, expand=True, side="top", fill="x")
 hystory_listbox.insert(0, "Hystory here..")
 inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
@@ -569,18 +659,19 @@ command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_w
 command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
 
 crlf_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["CRLF","LF", "CR"], width=100, border_width=2,border_color="#01595a")
-crlf_dropdown.pack(pady=5, padx=3,side="left")
+# crlf_dropdown.pack(pady=5, padx=3,side="left")
 crlf_optionmenu=myOptionMenu(inputFrame, values=["CRLF", "CR", "LF"],width=50)
 crlf_optionmenu.pack(pady=5, padx=3, side="left")
-chr_del_label=mylabel(inputFrame, txt="chr del", bg="transparent", justify="right", tcolor=GREEN)
+chr_del_label=mylabel(inputFrame, txt="chr del", bg="transparent", justify="right", tcolor=WHITE)
 chr_del_label.pack(side="left", padx=10)
 chr_del_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["off","1 MS", "2MS"], width=100, border_width=2,border_color="#01595a")
 chr_del_dropdown.pack(pady=5, padx=3,side="left") 
 sendfile_button= mybutton(inputFrame,text="send file",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 sendfile_button.pack(pady=5, padx=3,side="left")
 datamode_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["ASCII","HEX", "BINARY"], width=100, border_width=2,border_color="#01595a")
-datamode_dropdown.pack(pady=5, padx=3,side="left")
-
+# datamode_dropdown.pack(pady=5, padx=3,side="left")
+datamode_option= myOptionMenu(inputFrame, state="readonly", values=["ASCII","HEX", "BINARY"], width=100)
+datamode_option.pack(pady=5, padx=3,side="left")
 # resultFrame = tk.Frame(topFrame, padx=20, pady=4, bg="#2266ff")
 #===========#monitor
 
@@ -601,9 +692,11 @@ postreadFrame= customtkinter.CTkFrame(filterFrame,  border_width=0, border_color
 #postreadFrame.pack(fill="x",side="right") 
 clear_button2= mybutton(resultControlFrame,text="clear",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=clear_monitor)
 clear_button2.pack(pady=5, padx=3,side="left")
-outout_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Output", fg_color="#01595a", border_width=2, border_color="#01595a")
+# outout_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Output", fg_color="#01595a", border_width=2, border_color="#01595a")
+outout_cb=myCheckBox(resultControlFrame, text="Output")
 outout_cb.pack(pady=5, padx=3,side="left")
-logging_to_file_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Log to file", fg_color="#01595a", border_width=2, border_color="#01595a")
+# logging_to_file_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Log to file", fg_color="#01595a", border_width=2, border_color="#01595a")
+logging_to_file_cb=myCheckBox(resultControlFrame, text="Log to file")
 logging_to_file_cb.pack(pady=5, padx=3,side="left")
 logpath_button= mybutton(resultControlFrame,text="log path",bg=BUTTON_BACKGROUND,activebackground=BUTTON_ACTIVE_BACKGROUND,command=start_reading)
 logpath_button.pack(pady=5, padx=3,side="left")
@@ -680,7 +773,7 @@ open_button.pack(pady=10, padx=5, side="left")
 label_device=mylabel(topTopFrame, txt="Serial Port", bg="transparent", justify="right", tcolor=YELLOW)
 label_device.pack(side="left", padx=10)
 device_dropdown= customtkinter.CTkComboBox(topTopFrame, state="readonly", values=["/ttyUSB0","/ttyUSB2", "/ttyUSB1"], width=100, border_width=2,border_color="#01595a", command=on_port_select)
-device_dropdown.pack(pady=5, padx=3,side="left")
+# device_dropdown.pack(pady=5, padx=3,side="left")
 device_option= myOptionMenu(topTopFrame, values=["serial port"], width=100, corner_radius=8, command=on_port_select)
 device_option.pack(pady=5, padx=3,side="left")
 
@@ -690,11 +783,14 @@ device_option.pack(pady=5, padx=3,side="left")
 
 # The Combobox is also a bit easier to add and remove items after the widget has been created. The OptionMenu was designed to have a static number of items that are set when the widget is created.
 
-cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
+# cb_rts= customtkinter.CTkCheckBox(topTopFrame, text="RTS", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
+cb_rts=myCheckBox(topTopFrame, text="RTS" )
 cb_rts.pack(pady=5, padx=3,side="left")
-cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
+# cb_dtr= customtkinter.CTkCheckBox(topTopFrame, text="DTR", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
+cb_dtr=myCheckBox(topTopFrame, text="DTR")
 cb_dtr.pack(pady=5, padx=3,side="left")
-cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
+# cb_ar= customtkinter.CTkCheckBox(topTopFrame, text="Auto Reconnect", fg_color=RED, border_width=2, border_color=YELLOW, text_color=GREEN)
+cb_ar=myCheckBox(topTopFrame,text="Auto reconnect", command=on_cb_ar_change)
 cb_ar.pack(pady=5, padx=3,side="left")
 
 
@@ -704,29 +800,39 @@ sh_setting_button.pack(pady=10, padx=5, side="left")
 label_baud=mylabel(subTopLeftFrame1, txt="Baudrate", bg="transparent", justify="right", tcolor=NAVY)
 label_baud.pack(side="left", padx=10)
 baudrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame1, state="readonly", values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"], width=100, border_width=2,border_color="#01595a", command=on_baudrate_select)
-baudrate_dropdown.pack(pady=5, padx=3,side="right")
+# baudrate_dropdown.pack(pady=5, padx=3,side="right")
 baudrate_option=myOptionMenu(subTopLeftFrame1,values=["1200","4800","9600","19100","38400","57600","115200", "230400","custom"],width=100, command=on_baudrate_select)
 baudrate_option.pack(pady=5,padx=3,side="right")
 label_flow=mylabel(subTopLeftFrame2, txt="Flow Control", bg="transparent", justify="right", tcolor=NAVY)
 label_flow.pack(side="left", padx=10)
 flowrate_dropdown= customtkinter.CTkComboBox(subTopLeftFrame2, state="readonly", values=["none","Hardware", "Software"], width=100, border_width=2,border_color="#01595a", command=on_flowrate_select)
-flowrate_dropdown.pack(pady=5, padx=3,side="right")
+# flowrate_dropdown.pack(pady=5, padx=3,side="right")
+flowrate_option=myOptionMenu(subTopLeftFrame2, state="readonly", values=["none","Hardware", "Software"], width=100, command=on_flowrate_select)
+flowrate_option.pack(pady=5, padx=3,side="right")
 label_openmode=mylabel(subTopLeftFrame3, txt="Open Mode", bg="transparent", justify="right", tcolor=NAVY)
 label_openmode.pack(side="left", padx=10)
 openmode_dropdown= customtkinter.CTkComboBox(subTopLeftFrame3, state="readonly", values=["Read Only","Write Only","Read/Write"], width=100, border_width=2,border_color="#01595a")
-openmode_dropdown.pack(pady=5, padx=3,side="right")
+# openmode_dropdown.pack(pady=5, padx=3,side="right")
+openmode_option=myOptionMenu(subTopLeftFrame3, state="readonly", values=["Read Only","Write Only","Read/Write"], width=100)
+openmode_option.pack(pady=5, padx=3,side="right")
 label_databit=mylabel(subTopRightFrame1, txt="Data Bit", bg="transparent", justify="right", tcolor=NAVY)
 label_databit.pack(side="left", padx=10)
 databit_dropdown= customtkinter.CTkComboBox(subTopRightFrame1, state="readonly", values=["5","6", "7", "8"], width=100, border_width=2,border_color="#01595a")
-databit_dropdown.pack(pady=5, padx=3,side="right")
+# databit_dropdown.pack(pady=5, padx=3,side="right")
+databit_option=myOptionMenu(subTopRightFrame1, state="readonly", values=["5","6", "7", "8"], width=100)
+databit_option.pack(side="left", padx=3,pady=5)
 label_parity=mylabel(subTopRightFrame2, txt="Parity", bg="transparent", justify="right", tcolor=NAVY)
 label_parity.pack(side="left", padx=10)
 parity_dropdown= customtkinter.CTkComboBox(subTopRightFrame2, state="readonly", values=["none","Even", "Odd", "Space", "Mark"], width=100, border_width=2,border_color="#01595a",command=on_parity_select)
-parity_dropdown.pack(pady=5, padx=3,side="right")
+# parity_dropdown.pack(pady=5, padx=3,side="right")
+parity_option=myOptionMenu(subTopRightFrame2, state="readonly", values=["none","Even", "Odd", "Space", "Mark"], width=100, command=on_parity_select)
+parity_option.pack(pady=5, padx=3,side="right")
 label_stopbit=mylabel(subTopRightFrame3, txt="Stop Bit", bg="transparent", justify="right", tcolor=NAVY)
 label_stopbit.pack(side="left", padx=10)
 stopbit_dropdown= customtkinter.CTkComboBox(subTopRightFrame3, state="readonly", values=["1","2"], width=100, border_width=2,border_color="#01595a")
-stopbit_dropdown.pack(pady=5, padx=3,side="right")
+# stopbit_dropdown.pack(pady=5, padx=3,side="right")
+stopbit_option=myOptionMenu(subTopRightFrame3, state="readonly", values=["1","2"], width=100)
+stopbit_option.pack(pady=5, padx=3,side="right")
 
 cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Control Character", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_ctrl_char.pack(pady=5, padx=3,side="top",anchor="w")
@@ -815,7 +921,8 @@ def list_ser_ports():
 			if accepted_port:
 				device_dropdown.set(accepted_port[0])	
 				device_option.set(accepted_port[0])
-				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+				if cb_ar.get() is True:
+					ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 			device_option.bind("<<ComboboxSelected>>", on_port_select)
@@ -844,7 +951,10 @@ def list_ser_ports():
 			if accepted_port:
 				device_dropdown.set(accepted_port[0])	
 				device_option.set(accepted_port[0])
-				# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+				if cb_ar.get() ==1:
+					print("auto connect")
+					setupserial()
+					# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 			device_option.bind("<<ComboboxSelected>>", on_port_select)
@@ -894,10 +1004,12 @@ def setupserial():
 			port=device_option.get(),
 			# baudrate=int(baudrate_dropdown.get()),
 			baudrate=int(baudrate_option.get()),
-			parity=getParity(parity_dropdown.get()),
-			
-			stopbits=getStopBit(stopbit_dropdown.get()),
-			bytesize=int(databit_dropdown.get()),
+			# parity=getParity(parity_dropdown.get()),
+			parity=getParity(parity_option.get()),
+			# stopbits=getStopBit(stopbit_dropdown.get()),
+			stopbits=getStopBit(stopbit_option.get()),
+			# bytesize=int(databit_dropdown.get()),
+			bytesize=int(databit_option.get()),
 			timeout=0
 		)
 		sser=str(ser)
@@ -918,16 +1030,23 @@ def load_config():
 			# device_dropdown.set(config['port'])	
 			# baudrate_dropdown.set(config['baudrate'])
 			baudrate_option.set(config['baudrate'])
-			flowrate_dropdown.set(config['flowrate'])
-			openmode_dropdown.set(config['openmode'])
-			databit_dropdown.set(config['databit'])
-			parity_dropdown.set(config['parity'])
+			# flowrate_dropdown.set(config['flowrate'])
+			flowrate_option.set(config['flowrate'])
+			# openmode_dropdown.set(config['openmode'])
+			openmode_option.set(config['openmode'])
+			# openmode_option.set(config['opnmode'])
+			# databit_dropdown.set(config['databit'])
+			databit_option.set(config['databit'])
+			# parity_dropdown.set(config['parity'])
+			parity_option.set(config['parity'])
 			# print(f'parity > {config['parity']}')
-			stopbit_dropdown.set(config['stopbit'])
-			crlf_dropdown.set(config['crlf'])
+			# stopbit_dropdown.set(config['stopbit'])
+			stopbit_option.set(config['stopbit'])
+			# crlf_dropdown.set(config['crlf'])
 			crlf_optionmenu.set(config['crlf'])
 			chr_del_dropdown.set(config['chr_del'])
-			datamode_dropdown.set(config['datamode'])
+			# datamode_dropdown.set(config['datamode'])
+			datamode_option.set(config['datamode'])
 	except FileNotFoundError:
 		print("Config file not found, using default settings.")
 load_config();
@@ -956,16 +1075,24 @@ def save_history():
 def save_config():
 	config = {
 		# 'port': device_dropdown.get(),
-		'baudrate': baudrate_dropdown.get(),
-		'flowrate': flowrate_dropdown.get(),
-		'openmode': openmode_dropdown.get(),
-		'databit': databit_dropdown.get(),
-		'parity': parity_dropdown.get(),
-		'stopbit': stopbit_dropdown.get(),
+		# 'baudrate': baudrate_dropdown.get(),
+		'baudrate': baudrate_option.get(),
+		# 'flowrate': flowrate_dropdown.get(),
+		'flowrate': flowrate_option.get(),
+		# 'openmode': openmode_dropdown.get(),
+		'openmode': openmode_option.get(),
+		# 'databit': databit_dropdown.get(),
+		'databit':databit_option.get(),
+		# 'parity': parity_dropdown.get(),
+		'parity': parity_option.get(),
+		# 'stopbit': stopbit_dropdown.get(),
+		'stopbit': stopbit_option.get(),
 		# 'crlf': crlf_dropdown.get(),
 		'crlf': crlf_optionmenu.get(),
 		'chr_del': chr_del_dropdown.get(),
-		'datamode': datamode_dropdown.get()
+		# 'chr_del': chr_del_o.get(),
+		# 'datamode': datamode_dropdown.get(),
+		'datamode':datamode_option.get()
 	}
 	with open('srwconfig.json', 'w') as f:
 		json.dump(config, f, indent=4)
@@ -977,11 +1104,14 @@ save_config()
 command_entry.bind("<Return>", send_command)
 command_entry.bind("<Up>", traceBackCommand)
 command_entry.bind("<Down>", traceForwardCommand)
+command_entry.bind("<MouseWheel>", on_mouse_wheel_entry)
 hystory_listbox.bind("<<ListboxSelect>>", on_hystory_select)
 hystory_listbox.bind("<Double-Button-1>", on_hystory_double_click)
 # hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
-hystory_listbox.bind_all("<MouseWheel>", on_mouse_wheel_listbox)
+hystory_listbox.bind("<MouseWheel>", on_mouse_wheel_listbox)
 hystory_listbox.bind("<Button-3>", popup_menu)
+hystory_listbox.bind("<Button-4>", on_mouse_wheel_listbox_up)
+hystory_listbox.bind("<Button-5>", on_mouse_wheel_listbox_down)
 # hystory_listbox.bind("<Button-3>", popup_menu2(event, floating_window))
 # hystory_listbox.bind("<Button-3>", lambda event: popup_menu2(event, floating_window))
 # hystory_listbox.bind("<Button-3>", lambda event: popup_menu(event, floating_window))
