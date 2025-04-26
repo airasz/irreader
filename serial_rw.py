@@ -18,6 +18,8 @@ import json
 # import ctkmenu
 
 com_ports = []
+
+#https://www.computerhope.com/htmcolor.htm#color-codes
 FIRST_SCANNING=False
 BACKGROUND = "#d9d9d9"
 FOREGROUND = "black"
@@ -27,7 +29,7 @@ RED = "#FF0000"
 GREEN = "#00AA00"
 DARKGREEN= "#005800"
 BLUE = "#0000FF"
-LIGHTBLUE = "#9DB8E6"
+LIGHTBLUE = "#0384FC"
 YELLOW = "#FFFF00"
 ORANGE = "#FFA500"
 PURPLE = "#800080"
@@ -834,7 +836,7 @@ stopbit_dropdown= customtkinter.CTkComboBox(subTopRightFrame3, state="readonly",
 stopbit_option=myOptionMenu(subTopRightFrame3, state="readonly", values=["1","2"], width=100)
 stopbit_option.pack(pady=5, padx=3,side="right")
 
-cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Control Character", fg_color="#01595a", border_width=2, border_color="#01595a")
+cb_ctrl_char= customtkinter.CTkCheckBox(topNextFrame, text="Display CTRL Character", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_ctrl_char.pack(pady=5, padx=3,side="top",anchor="w")
 cb_show_timestamp= customtkinter.CTkCheckBox(topNextFrame, text="Show Timestamp", fg_color="#01595a", border_width=2, border_color="#01595a")
 cb_show_timestamp.pack(pady=5, padx=3,side="top",anchor="w")
