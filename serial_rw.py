@@ -1,5 +1,6 @@
 import tkinter as tk
 import customtkinter
+import platform
 # from customtkinter import CTkButton
 # from customtkinter import CTkEntry
 # from customtkinter import CTk
@@ -54,6 +55,7 @@ BG_LVL_1 = NAVY
 BG_LVL_2 = BLUE
 BG_LVL_3 = LIGHTBLUE
 BG_LVL_4 = CYAN
+CORNERRADIUS=10
 
 POINTER_HISTORY = 0
 CMD_HISTORY = []
@@ -78,13 +80,7 @@ command="",
 activeforeground=FOREGROUND,
 ):
 	button = tk.Button(
-		frame,
-		text=text,
-		bg=bg,
-		fg=fg,
-		justify=justify,
-		activebackground=activebackground,
-		activeforeground=activeforeground,
+		frame,text=text,bg=bg,fg=fg,justify=justify,activebackground=activebackground,activeforeground=activeforeground,
 		command=command,
 	)
 	return button
@@ -114,6 +110,12 @@ def myCheckBox(
 		frame, text=text, fg_color=BLACK, border_width=2, border_color=WHITE, text_color= WHITE
 	)
 	return cb
+def myframe(frame,level=1,width=0,height=0):
+	global CORNERRADIUS
+	BGC=[0, BG_LVL_1, BG_LVL_2, BG_LVL_3,BG_LVL_4]
+	frm=customtkinter.CTkFrame(frame, border_color=WHITE, border_width=0,corner_radius=CORNERRADIUS,fg_color=BGC[level])
+	return frm
+
 #contex menu
 def popup_menu2(event,frame):
 	try:
@@ -150,10 +152,12 @@ menu.add_command(label="Exit", command=root.quit)
 
 
 def mytextbox(frame , height, width, bordercolor, bg, fg):
-	ctb=customtkinter.CTkTextbox(frame, height=height, width=width, border_color=bordercolor, bg_color=bg, fg_color=fg, corner_radius=12, border_width=0)
+	global CORNERRADIUS
+	ctb=customtkinter.CTkTextbox(frame, height=height, width=width, border_color=bordercolor, bg_color=bg, fg_color=fg, corner_radius=CORNERRADIUS, border_width=0)
 	return ctb
 def mylabel (frame, txt, bg, justify, tcolor):
-	cl=customtkinter.CTkLabel(frame, text=txt, fg_color=bg, justify=justify, text_color= tcolor )
+	global CORNERRADIUS
+	cl=customtkinter.CTkLabel(frame, text=txt, fg_color=bg, justify=justify, text_color= tcolor ,corner_radius=CORNERRADIUS)
 	return cl
 def list_com_ports():
 	ports = serial.tools.list_ports.comports()
@@ -629,28 +633,38 @@ def on_cb_ar_change(event):
 	save_config()
 # topFrame = tk.Frame(root, padx=0, bg="#ffff44")
 #====level 1 frame=========
-topFrame=customtkinter.CTkFrame(root,border_width=0,border_color="#000000",fg_color=BG_LVL_1, width=300, height=100)
+# topFrame=customtkinter.CTkFrame(root,border_width=0,border_color="#000000",fg_color=BG_LVL_1, width=300, height=100,corner_radius=10)
+topFrame=myframe(root,level=1, height=100)
 topFrame.pack(side="top", fill="x",pady=2)
-middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
+# middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
+middleFrame=myframe(root, level=1)
 middleFrame.pack( fill="x", side="top",pady=2)
-monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
-monitorframe.pack(side="top", fill="x",pady=2)
-statusFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)	
+# monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
+monitorframe=myframe(root, level=1)
+monitorframe.pack(side="top", expand=True, fill="both",pady=2)
+# statusFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
+statusFrame= myframe(root, level=1)	
 statusFrame.pack(side="top", fill="x",pady=2)
 #===========level 2 frame=========
-topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+# topTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+topTopFrame=myframe(topFrame,level=2,height=100)
 topTopFrame.pack(side="top", padx=5, pady=5, fill="x")
-bottomTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+# bottomTopFrame= customtkinter.CTkFrame(topFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+bottomTopFrame=myframe(topFrame,level=2)
 # bottomTopFrame.pack(after=topTopFrame, side="top", padx=5, pady=5, fill="x")
 
-topLeftFrame= customtkinter.CTkFrame(bottomTopFrame, width=300,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+# topLeftFrame= customtkinter.CTkFrame(bottomTopFrame, width=300,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+topLeftFrame=myframe(bottomTopFrame,level=3)
 topLeftFrame.pack(side="left", padx=5, pady=5)
-topRightFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+# topRightFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+topRightFrame=myframe(bottomTopFrame, level=3)
 topRightFrame.pack(side="left", padx=5, pady=5)
-topNextFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+# topNextFrame= customtkinter.CTkFrame(bottomTopFrame, width=300, border_width=0, border_color="#aaff00", fg_color=BG_LVL_3)
+topNextFrame = myframe(bottomTopFrame, level=3)
 topNextFrame.pack(side="left", padx=5, pady=5, fill="both", expand=True)
 
-subTopLeftFrame1= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+# subTopLeftFrame1= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
+subTopLeftFrame1=myframe(topLeftFrame, level=4)
 subTopLeftFrame1.pack(side="top", padx=5, pady=5,expand=True,fill="x")
 subTopLeftFrame2= customtkinter.CTkFrame(topLeftFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
 subTopLeftFrame2.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
@@ -663,22 +677,23 @@ subTopRightFrame2.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
 subTopRightFrame3= customtkinter.CTkFrame(topRightFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_4)
 subTopRightFrame3.pack(side="bottom", padx=5, pady=5,expand=True,fill="x")
 
-historyFrame=customtkinter.CTkFrame(middleFrame, height=200, border_width=0,border_color=BLACK, fg_color=NAVY) 	 
-historyFrame.pack(pady=1, padx=1, expand=True, side="top", fill="x")
-hystory_listbox=CTkListbox(historyFrame, label_text="history",label_fg_color=BLACK, label_text_color=WHITE, height=200, 
+historyFrame=customtkinter.CTkFrame(middleFrame, height=200, border_width=2,border_color=RED, fg_color=BG_LVL_1) 	 
+# historyFrame.pack(pady=1, padx=1, expand=True, side="top", fill="x")
+hystory_listbox=CTkListbox(middleFrame, label_text="history",label_fg_color=BLACK,  label_text_color=WHITE, height=200, 
 border_width=0,border_color="#01595a",bg_color=NAVY, fg_color=CYAN, hover_color=LIME, highlight_color= WHITE,
-text_color=NAVY, scrollbar_button_color=BLACK)
+text_color=NAVY, scrollbar_button_color=BLACK, corner_radius=CORNERRADIUS)
 hystory_listbox.pack(padx=5, pady=5, expand=True, side="top", fill="x")
 hystory_listbox.insert(0, "Hystory here..")
-inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+# inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+inputFrame= myframe(middleFrame, level=2)
 inputFrame.pack( fill="x", side="top", padx=5, pady=5)
 
 status_label=mylabel(statusFrame, txt="Status", bg="transparent", justify="left", tcolor=YELLOW)
 # status_label=customtkinter.CTkLabel(statusFrame, wraplength=100, text="Status", fg_color="transparent", justify="right", text_color=NAVY)
 # status_label.configure(wraplength=300)
-status_label.pack(side="left", padx=1,expand=True, fill="x")
+status_label.pack(side="left", padx=5,pady=5,expand=True, fill="x")
 
-command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=0, border_color="#aaff00", fg_color=CYAN, text_color=BROWN)
+command_entry= customtkinter.CTkEntry(inputFrame, width=220, height=30, border_width=0, border_color="#aaff00", fg_color=CYAN, text_color=BROWN, corner_radius=CORNERRADIUS)
 command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
 
 crlf_dropdown= customtkinter.CTkComboBox(inputFrame, state="readonly", values=["CRLF","LF", "CR"], width=100, border_width=2,border_color="#01595a")
@@ -700,10 +715,11 @@ datamode_option.pack(pady=5, padx=3,side="left")
 
 texbox_monitor=mytextbox(monitorframe, height=200, width=500, bordercolor="#ffff00", fg=YELLOW, bg="transparent" )
 texbox_monitor.configure(text_color=BLACK)
-texbox_monitor.pack(padx=5, fill="x",pady=3)
+texbox_monitor.pack(padx=5, fill="both",expand=True,  pady=5)
 
-resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
-resultControlFrame.pack(fill="x",side="top", padx=5)
+# resultControlFrame= customtkinter.CTkFrame(monitorframe,  border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
+resultControlFrame=myframe(monitorframe, level=2)
+resultControlFrame.pack(fill="x", pady=5,side="top", padx=5)
 
 resultFrame=customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
 # resultFrame.pack(fill="x",side="bottom") 
@@ -908,10 +924,14 @@ else:
 	applog( "we in linux\n")
 	hystory_listbox.bind("<Button-4>", on_mouse_wheel_listbox_up)
 	hystory_listbox.bind("<Button-5>", on_mouse_wheel_listbox_down)
+	command_entry.bind("<Button-4>", traceBackCommand)
+	command_entry.bind("<Button-5>", traceForwardCommand)
 
 def list_ser_ports():
+	global ser
 	global FIRST_SCANNING
-	print(f'os name: {os.name }')
+	# print(f'os name: {os.name }')
+	# print(f'platform : {platform.system()}') # return Linux , Windows
 	if os.name== 'nt':
 		com_ports = list_com_ports()
 		accepted_port=[]
@@ -922,6 +942,7 @@ def list_ser_ports():
 			device_dropdown.configure(values=com_ports)
 			device_option.configure(values=com_ports)
 			# accepted_port.append(port)
+		
 			# text_box.insert(tk.END, "Available COM ports:\n")
 			# applog( "Available COM ports:\n")
 			for port in com_ports:
@@ -951,7 +972,8 @@ def list_ser_ports():
 				device_dropdown.set(accepted_port[0])	
 				device_option.set(accepted_port[0])
 				if cb_ar.get() is True:
-					ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
+					if ser.isOpen() is False:
+						ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			# device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
 			device_option.bind("<<ComboboxSelected>>", on_port_select)
@@ -981,8 +1003,9 @@ def list_ser_ports():
 				device_dropdown.set(accepted_port[0])	
 				device_option.set(accepted_port[0])
 				if cb_ar.get() ==1:
-					print("auto connect")
-					setupserial()
+					# print("auto connect")
+					if ser.isOpen() is False:
+						setupserial()
 					# ser = serial.Serial(accepted_port[0], baudrate=9600, timeout=1)  # Replace 'COM3' with your port
 				
 			device_dropdown.bind("<<ComboboxSelected>>", on_port_select)
