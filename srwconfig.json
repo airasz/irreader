@@ -8,5 +8,5 @@
     "crlf": "CRLF",
     "chr_del": "0",
     "datamode": "ASCII",
-    "autoreconnect": 1
+    "autoreconnect": 0
 }
