@@ -62,7 +62,7 @@ POINTER_HISTORY = 0
 CMD_HISTORY = []
 MAX_HISTORY = 50
 OSNAME = ""
-
+POPUP_SUGGESTION = False
 LBFOCUS = 0
 root = customtkinter.CTk()
 root.title("Serialone v 1")
@@ -255,13 +255,15 @@ def read_serial():
                 count += 1
                 if count == 1:
                     update_textbox(line)  # Update the textbox with the received data
-                    applog(line)
+                    applog(string_to_hex(line) if outout_cb.get() == 1 else line)
                 if count > 2:
                     count = 0
                 # update_textbox(str(count) + " > "+line)  # Update the textbox with the received data
     except Exception as e:
         update_textbox(f"Error: {e}")
 
+def string_to_hex(string):
+    return ' '.join(format(ord(c), '02x') for c in string)
 
 def write_serial(data):
     global available_ports
@@ -419,6 +421,9 @@ def send_toserial():
 def traceBackCommand(event):
     global ser
     global POINTER_HISTORY
+    global POPUP_SUGGESTION
+    if POPUP_SUGGESTION:
+        return  
     # hystory_listbox.selection_set(0)
     # command = hystory_listbox.get(hystory_listbox.curselection(POINTER_HISTORY))
     POINTER_HISTORY = POINTER_HISTORY - 1
@@ -445,6 +450,9 @@ def traceBackCommand(event):
 def traceForwardCommand(event):
     global ser
     global POINTER_HISTORY
+    global POPUP_SUGGESTION
+    if POPUP_SUGGESTION:
+        return  
     POINTER_HISTORY = POINTER_HISTORY + 1
     print(
         f"POINTER HISTORY : {POINTER_HISTORY} | CMD_HISTORY size : {len(CMD_HISTORY)}"
@@ -529,6 +537,8 @@ def update_textbox(line):
 def applog(msg):
     # texbox_monitor.delete("1.0", "end")
     texbox_monitor.insert(tk.END, msg)
+    if auto_scroll_cb.get() == 1:
+        texbox_monitor.see(tk.END)
 
 
 # Start the serial reading in a separate thread
@@ -540,6 +550,12 @@ def start_reading():
     bottomTopFrame.pack_forget()
     thread = threading.Thread(target=read_serial, daemon=True)
     thread.start()
+    # inputFrame.pack(fill="x", side="top", padx=5, pady=5)
+    monitorframe.pack_forget()
+    statusFrame.pack_forget()
+    middleFrame.pack(fill="x", side="top", pady=2)    
+    monitorframe.pack(side="top", expand=True, fill="both", pady=2)
+    statusFrame.pack(side="top", fill="x", pady=2)
 
 
 def close_serial():
@@ -550,6 +566,8 @@ def close_serial():
         text_box.insert(tk.END, f"Serial Port: {ser} is closed\n")
         applog(f"Serial Port: {ser} is closed\n")
         sh_setting_button.pack(side="left", padx=5, pady=5)
+        # inputFrame.pack_forget()
+        middleFrame.pack_forget()
     # else:
 
     # 	open_button.configure(text="open", command=start_reading)
@@ -570,6 +588,138 @@ def copytoclip():
     filtr = text_box.get(1.0, "end-1c")
     pyperclip.copy(filtr)
     # subprocess.run("pbcopy", text=True, input=filtr)
+
+
+def paste_from_clipboard():
+    try:
+        clipboard_content = pyperclip.paste()
+        command_entry.insert(tk.INSERT, clipboard_content)
+    except Exception as e:
+        print(f"Error pasting from clipboard: {e}")
+def paste_and_send():
+    paste_from_clipboard()
+    send_toserial()
+
+def clear_and_paste_from_clipboard():
+    command_entry.delete(0, tk.END)
+    paste_from_clipboard()
+
+def show_context_menu(event):
+    context_menu = tk.Menu(root, tearoff=0)
+    context_menu.add_command(label="Paste", command=paste_from_clipboard)
+    context_menu.add_command(label="paste and send", command=paste_and_send)
+    context_menu.add_command(label="Clear and Paste", command=clear_and_paste_from_clipboard)
+    context_menu.tk_popup(event.x_root, event.y_root)
+
+
+class SuggestionPopup:
+    def __init__(self, entry_widget, history_list):
+        self.entry = entry_widget
+        self.history = history_list
+        self.popup = None
+        self.listbox = None
+        
+        self.entry.bind("<KeyRelease>", self.on_key_release)
+        self.entry.bind("<FocusOut>", self.on_focus_out)
+        self.entry.bind("<Down>", self.on_arrow_down)
+        self.entry.bind("<Up>", self.on_arrow_up)
+        self.entry.bind("<Return>", self.on_return)
+
+    def on_key_release(self, event):
+        if event.keysym in ("Up", "Down", "Return", "Escape"):
+            return
+
+        typed_text = self.entry.get()
+        if not typed_text:
+            self.hide_popup()
+            return
+
+        matches = [item for item in self.history if typed_text.lower() in item.lower()]
+        if matches:
+            self.show_popup(matches)
+        else:
+            self.hide_popup()
+
+    def show_popup(self, matches):
+        if not self.popup:
+            # unbind_command_entry()
+            global POPUP_SUGGESTION
+            POPUP_SUGGESTION = True
+            self.popup = tk.Toplevel(self.entry)
+            self.popup.wm_overrideredirect(True)
+            self.popup.wm_geometry(f"+{self.entry.winfo_rootx()}+{self.entry.winfo_rooty() + self.entry.winfo_height()}")
+            
+            self.listbox = tk.Listbox(self.popup, height=5)
+            self.listbox.pack(fill="both", expand=True)
+            self.listbox.bind("<Button-1>", self.on_selection)
+            self.listbox.bind("<Return>", self.on_selection)
+            
+        self.listbox.delete(0, tk.END)
+        for item in matches:
+            self.listbox.insert(tk.END, item)
+        self.listbox.select_set(0)
+
+    def hide_popup(self):
+        if self.popup:
+            # bind_command_entry()
+            global POPUP_SUGGESTION
+            POPUP_SUGGESTION = False
+            self.popup.destroy()
+            self.popup = None
+            self.listbox = None
+
+    def on_focus_out(self, event):
+        # Delay hiding to allow click event on listbox to register
+        self.entry.after(100, self.hide_popup)
+
+    def on_selection(self, event=None):
+        if self.listbox:
+            selection = self.listbox.curselection()
+            if selection:
+                selected_text = self.listbox.get(selection[0])
+                self.entry.delete(0, tk.END)
+                self.entry.insert(0, selected_text)
+                self.hide_popup()
+                self.entry.focus_set()
+                send_command(None)
+
+    def on_arrow_down(self, event):
+        if self.listbox:
+            current_selection = self.listbox.curselection()
+            if current_selection:
+                next_index = min(current_selection[0] + 1, self.listbox.size() - 1)
+                self.listbox.select_clear(0, tk.END)
+                self.listbox.select_set(next_index)
+                self.listbox.see(next_index)
+                
+                selected_text = self.listbox.get(next_index)
+                self.entry.delete(0, tk.END)
+                print(f"selected_text: {selected_text}")
+                self.entry.insert(0, selected_text)
+            else:
+                 self.listbox.select_set(0)
+                 selected_text = self.listbox.get(0)
+                 self.entry.delete(0, tk.END)
+                 self.entry.insert(0, selected_text)
+
+    def on_arrow_up(self, event):
+        if self.listbox:
+            current_selection = self.listbox.curselection()
+            if current_selection:
+                prev_index = max(current_selection[0] - 1, 0)
+                self.listbox.select_clear(0, tk.END)
+                self.listbox.select_set(prev_index)
+                self.listbox.see(prev_index)
+                
+                selected_text = self.listbox.get(prev_index)
+                self.entry.delete(0, tk.END)
+                print(f"selected_text: {selected_text}")
+                self.entry.insert(0, selected_text)
+
+    def on_return(self, event):
+        if self.popup:
+            self.on_selection()
+            return "break" # Prevent default return behavior if popup is open
 
 
 # Main Tkinter window
@@ -738,7 +888,8 @@ topFrame = myframe(root, level=1, height=100)
 topFrame.pack(side="top", fill="x", pady=2)
 # middleFrame= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
 middleFrame = myframe(root, level=1)
-middleFrame.pack(fill="x", side="top", pady=2)
+# middleFrame.pack(fill="x", side="top", pady=2)
+
 # monitorframe= customtkinter.CTkFrame(root, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_1)
 monitorframe = myframe(root, level=1)
 monitorframe.pack(side="top", expand=True, fill="both", pady=2)
@@ -822,7 +973,7 @@ hystory_listbox = CTkListbox(
     label_fg_color=BLACK,
     label_text_color=WHITE,
     height=200,
-    border_width=0,
+    border_width=1,
     border_color="#01595a",
     bg_color=NAVY,
     fg_color=CYAN,
@@ -837,6 +988,7 @@ hystory_listbox.insert(0, "Hystory here..")
 # inputFrame= customtkinter.CTkFrame(middleFrame, width=300, height=100, border_width=0, border_color="#aaff00", fg_color=BG_LVL_2)
 inputFrame = myframe(middleFrame, level=2)
 inputFrame.pack(fill="x", side="top", padx=5, pady=5)
+# inputFrame.visible = False
 
 status_label = mylabel(
     statusFrame, txt="Status", bg="transparent", justify="left", tcolor=YELLOW
@@ -856,7 +1008,22 @@ command_entry = customtkinter.CTkEntry(
     corner_radius=CORNERRADIUS,
 )
 command_entry.pack(side="left", padx=5, pady=5, expand=True, fill="x")
+command_entry.bind("<Button-3>", show_context_menu)
+suggestion_popup = SuggestionPopup(command_entry, CMD_HISTORY)
 
+send_button = customtkinter.CTkButton(
+    inputFrame,
+    text="Send",
+    command=send_toserial,
+    width=100,
+    height=30,
+    border_width=0,
+    border_color="#aaff00",
+    fg_color=CYAN,
+    text_color=BROWN,
+    corner_radius=CORNERRADIUS,
+)
+send_button.pack(side="left", padx=5, pady=5)
 crlf_dropdown = customtkinter.CTkComboBox(
     inputFrame,
     state="readonly",
@@ -952,8 +1119,11 @@ clear_button2 = mybutton(
     command=clear_monitor,
 )
 clear_button2.pack(pady=5, padx=3, side="left")
+
+auto_scroll_cb = myCheckBox(resultControlFrame, text="Auto scroll")
+auto_scroll_cb.pack(pady=5, padx=3, side="left")
 # outout_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Output", fg_color="#01595a", border_width=2, border_color="#01595a")
-outout_cb = myCheckBox(resultControlFrame, text="Output")
+outout_cb = myCheckBox(resultControlFrame, text="Hex Output")
 outout_cb.pack(pady=5, padx=3, side="left")
 # logging_to_file_cb= customtkinter.CTkCheckBox(resultControlFrame, text="Log to file", fg_color="#01595a", border_width=2, border_color="#01595a")
 logging_to_file_cb = myCheckBox(resultControlFrame, text="Log to file")
@@ -1368,6 +1538,18 @@ cb_appendlog.pack(pady=5, padx=3, side="left")
 #     bytesize=serial.EIGHTBITS,
 # )
 OSNAME = os.name
+def bind_command_entry():
+    global command_entry
+    command_entry.bind("<Return>", send_command)
+    command_entry.bind("<Up>", traceBackCommand)
+    command_entry.bind("<Down>", traceForwardCommand)
+
+def unbind_command_entry():
+    global command_entry
+    command_entry.unbind("<Return>")
+    command_entry.unbind("<Up>")
+    command_entry.unbind("<Down>")
+
 if OSNAME == "nt":
     print("we in windows")
     applog("we in windows\n")
@@ -1378,6 +1560,7 @@ else:
     applog("we in linux\n")
     hystory_listbox.bind("<Button-4>", on_mouse_wheel_listbox_up)
     hystory_listbox.bind("<Button-5>", on_mouse_wheel_listbox_down)
+    # bind_command_entry()
     command_entry.bind("<Button-4>", traceBackCommand)
     command_entry.bind("<Button-5>", traceForwardCommand)
 
